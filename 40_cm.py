@@ -23,7 +23,7 @@ import math
 BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
 
 def calculateTargetDistance(dist):
-    return (dist / (5.5 * math.pi)) * 360
+    return (dist / (7.3 * math.pi)) * 360
 
 def moveForward(dist): # distance in cm
     try:
@@ -32,7 +32,7 @@ def moveForward(dist): # distance in cm
         BP.offset_motor_encoder(BP.PORT_C, BP.get_motor_encoder(BP.PORT_C))
     except IOError as error:
         print (error)
-    targetDist = calculateTargetDistance(dist)
+    targetDist = calculateTargetDistance(dist) 
     BP.set_motor_limits(BP.PORT_B, 70, 200)
     BP.set_motor_limits(BP.PORT_C, 70, 200)
     BP.set_motor_position(BP.PORT_B, targetDist)
@@ -56,15 +56,17 @@ def rotateDegree(degrees):
         BP.offset_motor_encoder(BP.PORT_C, BP.get_motor_encoder(BP.PORT_C))
     except IOError as error:
         print (error)
-    pos = calculateTargetDistance(degrees / 360 * 12.275 * math.pi)
+    pos = calculateTargetDistance(degrees / 360 * 12.699999 * math.pi)
     print(pos)
-    BP.set_motor_position(BP.PORT_B, pos)
+    #BP.set_motor_position_kp(BP.PORT_C, 70)
+    #BP.set_motor_position_kp(BP.PORT_B, 70)
     BP.set_motor_position(BP.PORT_C, -pos)
+    BP.set_motor_position(BP.PORT_B, pos)
 
 def moveSquare(num):
     for n in range(num):
         for i in range(4):
-            moveForward(40)
+            moveForward(42.2)
             wait()
             rotateDegree(90)
             wait()
@@ -77,6 +79,7 @@ def testTurn():
     moveForward(40)
 
 try:
+    #BP.reset_all()
     moveSquare(1)
     #testTurn()
 
