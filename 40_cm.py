@@ -58,8 +58,6 @@ def rotateDegree(degrees):
         print (error)
     pos = calculateTargetDistance(degrees / 360 * 12.699999 * math.pi)
     print(pos)
-    #BP.set_motor_position_kp(BP.PORT_C, 70)
-    #BP.set_motor_position_kp(BP.PORT_B, 70)
     BP.set_motor_position(BP.PORT_C, -pos)
     BP.set_motor_position(BP.PORT_B, pos)
 
