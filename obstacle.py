@@ -7,7 +7,7 @@
 # Released under the MIT license (http://choosealicense.com/licenses/mit/).
 # For more information, see https://github.com/DexterInd/BrickPi3/blob/master/LICENSE.md
 #
-# This code is an example for running a motor to a target position set by the encoder of another motor.
+# This code moves the robot forward and back followed by a rotation when it encounters an obstacle.
 #
 # Hardware: Connect EV3 or NXT motors to the BrickPi3 motor ports B and C. Make sure that the BrickPi3 is running on a 9v power supply.
 #
