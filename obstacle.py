@@ -21,53 +21,65 @@ import brickpi3 # import the BrickPi3 drivers
 import math
 
 BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
-# Motor ports
-rightMotor = BP.PORT_
-leftMotor = BP.PORT_
-# Sensor ports 
-rightSensor = BP.PORT_
-leftSensor = BP.PORT_
 
-def moveForward(dist): # distance in cm
-    try:
-        print("forward")
-        BP.offset_motor_encoder(BP.PORT_B, BP.get_motor_encoder(BP.PORT_B))
-        BP.offset_motor_encoder(BP.PORT_C, BP.get_motor_encoder(BP.PORT_C))
-    except IOError as error:
-        print (error)
-    targetDist = calculateTargetDistance(dist) 
-    BP.set_motor_limits(BP.PORT_B, 70, 200)
-    BP.set_motor_limits(BP.PORT_C, 70, 200)
-    BP.set_motor_position(BP.PORT_B, targetDist)
-    BP.set_motor_position(BP.PORT_C, targetDist)
+# Motor ports
+rightMotor = BP.PORT_B
+leftMotor = BP.PORT_C
+# Sensor ports 
+rightSensor = BP.PORT_4
+leftSensor = BP.PORT_3
+
+def calculateRotationDistance(degrees):
+    return (12.7 * degrees) / 7.3
+
+def moveForward():
+    BP.set_motor_power(leftMotor, 40)
+    BP.set_motor_power(rightMotor, 40)
 
 def wait():
     print("waiting")
     time.sleep(1)
-    vB = BP.get_motor_status(BP.PORT_B)[3]
-    vC = BP.get_motor_status(BP.PORT_C)[3]
-    while(vB != 0 or vC != 0):
-        vB = BP.get_motor_status(BP.PORT_B)[3]
-        vC = BP.get_motor_status(BP.PORT_C)[3]
+    vLeft = BP.get_motor_status(leftMotor)[3]
+    vRight = BP.get_motor_status(rightMotor)[3]
+    while(vLeft != 0 or vRight != 0):
+        vLeft = BP.get_motor_status(leftMotor)[3]
+        vRight = BP.get_motor_status(rightMotor)[3]
     print("wait finished")
 
 
-def rotateDegree(degrees):
+def rotateDegrees(degrees):
     print("rotate")
     try:
         BP.offset_motor_encoder(BP.PORT_B, BP.get_motor_encoder(BP.PORT_B))
         BP.offset_motor_encoder(BP.PORT_C, BP.get_motor_encoder(BP.PORT_C))
     except IOError as error:
         print (error)
-    pos = calculateTargetDistance(degrees / 360 * 12.699999 * math.pi)
+    pos = calculateRotationDistance(degrees)
     print(pos)
     BP.set_motor_position(BP.PORT_C, -pos)
     BP.set_motor_position(BP.PORT_B, pos)
 
 def initialise():
+    BP.set_motor_limits(leftMotor, 70, 200)
+    BP.set_motor_limits(rightMotor, 70, 200)
     BP.set_sensor_type(leftSensor, BP.SENSOR_TYPE.TOUCH)
     BP.set_sensor_type(rightSensor, BP.SENSOR_TYPE.TOUCH)
-    
+
+def moveBack():
+    BP.set_motor_power(leftMotor, 0)
+    BP.set_motor_power(rightMotor, 0)
+    wait()
+    BP.set_motor_position(leftMotor, -20)
+    BP.set_motor_position(rightMotor, -20)
+
+def turnRight():
+    rotateDegrees(-90)
+
+def turnLeft():
+    rotateDegrees(90)
+
+def turnAround():
+    rotateDegrees(180)
 
 try:
     initialise()
@@ -76,15 +88,18 @@ try:
         try:
             leftSense = BP.get_sensor(leftSensor)
             rightSense = BP.get_sensor(rightSensor)
-            if (leftSense == 1 and rightSense == 1):
-                moveBack()
-            elif (leftSense == 1):
-                turnRight()
-            elif (rightSense == 1):
-                turnLeft()
+            if (leftSense == 1 or rightSense == 1)
+		moveBack()
+	        if (leftSense == 1 and rightSense == 1):
+	            turnAround()
+	        elif (leftSense == 1):
+	            turnRight()
+	        elif (rightSense == 1):
+	            turnLeft()
+		moveForward()
         except brickpi3.SensorError as error:
             print(error)
-        wait()
+        time.sleep(2)
 
 
 except KeyboardInterrupt:
