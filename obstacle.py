@@ -29,13 +29,30 @@ leftMotor = BP.PORT_C
 rightSensor = BP.PORT_4
 leftSensor = BP.PORT_3
 
-def calculateRotationDistance(degrees):
-    return (12.7 * degrees) / 7.3
+def initialise():
+    BP.set_motor_limits(leftMotor, 70, 200)
+    BP.set_motor_limits(rightMotor, 70, 200)
+    BP.set_sensor_type(leftSensor, BP.SENSOR_TYPE.TOUCH)
+    BP.set_sensor_type(rightSensor, BP.SENSOR_TYPE.TOUCH)
+    print("Finalised initialisation")
+
+def getSensorReadings():
+    return BP.get_sensor(leftSensor), BP.get_sensor(rightSensor)
+
+def resetPower():
+    BP.set_motor_power(leftMotor, 0)
+    BP.set_motor_power(rightMotor, 0)
+    wait()
 
 def moveForward():
     print("advancing")
-    BP.set_motor_power(leftMotor, 40)
-    BP.set_motor_power(rightMotor, 40)
+    BP.set_motor_power(leftMotor, -30)
+    BP.set_motor_power(rightMotor, -30)
+
+def moveBack():
+    print("moving back")
+    BP.set_motor_power(leftMotor, 30)
+    BP.set_motor_power(rightMotor, 30)
 
 def wait():
     print("waiting")
@@ -47,32 +64,27 @@ def wait():
         vRight = BP.get_motor_status(rightMotor)[3]
     print("wait finished")
 
-
 def rotateDegrees(degrees):
+    pos = 12.7 * degrees / 7.3
     print("rotating %d degrees" % degrees)
     try:
-        BP.offset_motor_encoder(BP.PORT_B, BP.get_motor_encoder(BP.PORT_B))
-        BP.offset_motor_encoder(BP.PORT_C, BP.get_motor_encoder(BP.PORT_C))
+        BP.offset_motor_encoder(rightMotor, BP.get_motor_encoder(rightMotor))
+        BP.offset_motor_encoder(leftMotor, BP.get_motor_encoder(leftMotor))
     except IOError as error:
         print (error)
-    pos = calculateRotationDistance(degrees)
     print(pos)
-    BP.set_motor_position(BP.PORT_C, -pos)
-    BP.set_motor_position(BP.PORT_B, pos)
+    BP.set_motor_position(rightMotor, -pos)
+    BP.set_motor_position(leftMotor, pos)
 
-def initialise():
-    BP.set_motor_limits(leftMotor, 70, 200)
-    BP.set_motor_limits(rightMotor, 70, 200)
-    BP.set_sensor_type(leftSensor, BP.SENSOR_TYPE.TOUCH)
-    BP.set_sensor_type(rightSensor, BP.SENSOR_TYPE.TOUCH)
-
-def moveBack():
-    print("moving back")
-    BP.set_motor_power(leftMotor, 0)
-    BP.set_motor_power(rightMotor, 0)
-    wait()
-    BP.set_motor_position(leftMotor, -20)
-    BP.set_motor_position(rightMotor, -20)
+def backTrack():
+    print("obstacle detected")
+    resetPower()
+    moveBack()
+    leftSense, rightSense = getSensorReadings()
+    while (leftSense == 1 or rightSense == 1):
+        time.sleep(1)
+        leftSense, rightSense = getSensorReadings()
+    resetPower()
 
 def turnRight():
     rotateDegrees(-90)
@@ -88,20 +100,21 @@ try:
     moveForward()
     while True:
         try:
-            leftSense = BP.get_sensor(leftSensor)
-            rightSense = BP.get_sensor(rightSensor)
-            if (leftSense == 1 or rightSense == 1)
-		moveBack()
+            leftSense, rightSense = getSensorReadings()
+            print("Left sensor: %d; Right sensor: %d" % (leftSense, rightSense))
+            if (leftSense == 1 or rightSense == 1):
+		backTrack()
 	        if (leftSense == 1 and rightSense == 1):
 	            turnAround()
 	        elif (leftSense == 1):
 	            turnRight()
 	        elif (rightSense == 1):
 	            turnLeft()
+                wait()
 		moveForward()
         except brickpi3.SensorError as error:
             print(error)
-        time.sleep(2)
+        time.sleep(1)
 
 
 except KeyboardInterrupt:
