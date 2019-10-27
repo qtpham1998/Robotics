@@ -22,9 +22,6 @@ import math
 
 BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
 
-def calculateTargetDistance(dist):
-    return (dist / (7.3 * math.pi)) * 360
-
 def moveForward(dist): # distance in cm
     try:
         print("forward")
@@ -61,26 +58,8 @@ def rotateDegree(degrees):
     BP.set_motor_position(BP.PORT_C, -pos)
     BP.set_motor_position(BP.PORT_B, pos)
 
-def moveSquare(num):
-    for n in range(num):
-        for i in range(4):
-            moveForward(-42.2)
-            wait()
-            rotateDegree(90)
-            wait()
-
-def testTurn():
-    moveForward(40)
-    wait()
-    rotateDegree(90)
-    wait()
-    moveForward(40)
-
 try:
-    #BP.reset_all()
-    moveSquare(1)
-    #testTurn()
-
+    
 
 except KeyboardInterrupt:
     BP.reset_all()
