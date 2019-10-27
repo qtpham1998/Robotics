@@ -33,6 +33,7 @@ def calculateRotationDistance(degrees):
     return (12.7 * degrees) / 7.3
 
 def moveForward():
+    print("advancing")
     BP.set_motor_power(leftMotor, 40)
     BP.set_motor_power(rightMotor, 40)
 
@@ -48,7 +49,7 @@ def wait():
 
 
 def rotateDegrees(degrees):
-    print("rotate")
+    print("rotating %d degrees" % degrees)
     try:
         BP.offset_motor_encoder(BP.PORT_B, BP.get_motor_encoder(BP.PORT_B))
         BP.offset_motor_encoder(BP.PORT_C, BP.get_motor_encoder(BP.PORT_C))
@@ -66,6 +67,7 @@ def initialise():
     BP.set_sensor_type(rightSensor, BP.SENSOR_TYPE.TOUCH)
 
 def moveBack():
+    print("moving back")
     BP.set_motor_power(leftMotor, 0)
     BP.set_motor_power(rightMotor, 0)
     wait()
