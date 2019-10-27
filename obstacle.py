@@ -21,6 +21,12 @@ import brickpi3 # import the BrickPi3 drivers
 import math
 
 BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
+# Motor ports
+rightMotor = BP.PORT_
+leftMotor = BP.PORT_
+# Sensor ports 
+rightSensor = BP.PORT_
+leftSensor = BP.PORT_
 
 def moveForward(dist): # distance in cm
     try:
@@ -58,8 +64,28 @@ def rotateDegree(degrees):
     BP.set_motor_position(BP.PORT_C, -pos)
     BP.set_motor_position(BP.PORT_B, pos)
 
-try:
+def initialise():
+    BP.set_sensor_type(leftSensor, BP.SENSOR_TYPE.TOUCH)
+    BP.set_sensor_type(rightSensor, BP.SENSOR_TYPE.TOUCH)
     
+
+try:
+    initialise()
+    moveForward()
+    while True:
+        try:
+            leftSense = BP.get_sensor(leftSensor)
+            rightSense = BP.get_sensor(rightSensor)
+            if (leftSense == 1 and rightSense == 1):
+                moveBack()
+            elif (leftSense == 1):
+                turnRight()
+            elif (rightSense == 1):
+                turnLeft()
+        except brickpi3.SensorError as error:
+            print(error)
+        wait()
+
 
 except KeyboardInterrupt:
     BP.reset_all()

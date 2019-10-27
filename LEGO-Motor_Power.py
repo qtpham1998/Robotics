@@ -38,7 +38,7 @@ try:
         except IOError as error:
             print(error)
             power = 0
-        BP.set_motor_power(BP.PORT_C, power)
+        BP.set_motor_power(BP.PORT_C, 70)
         print("taget power is %d ", power, "motor C status: ", BP.get_motor_status(BP.PORT_C))        
         time.sleep(0.02)  # delay for 0.02 seconds (20ms) to reduce the Raspberry Pi CPU load.
 

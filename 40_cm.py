@@ -22,44 +22,47 @@ import math
 
 BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
 
+leftMotor = BP.PORT_B
+rightMotor = BP.PORT_C
+
 def calculateTargetDistance(dist):
     return (dist / (7.3 * math.pi)) * 360
 
 def moveForward(dist): # distance in cm
     try:
         print("forward")
-        BP.offset_motor_encoder(BP.PORT_B, BP.get_motor_encoder(BP.PORT_B))
-        BP.offset_motor_encoder(BP.PORT_C, BP.get_motor_encoder(BP.PORT_C))
+        BP.offset_motor_encoder(leftMotor, BP.get_motor_encoder(leftMotor))
+        BP.offset_motor_encoder(rightMotor, BP.get_motor_encoder(rightMotor))
     except IOError as error:
         print (error)
     targetDist = calculateTargetDistance(dist) 
-    BP.set_motor_limits(BP.PORT_B, 70, 200)
-    BP.set_motor_limits(BP.PORT_C, 70, 200)
-    BP.set_motor_position(BP.PORT_B, targetDist)
-    BP.set_motor_position(BP.PORT_C, targetDist)
+    BP.set_motor_limits(leftMotor, 70, 200)
+    BP.set_motor_limits(rightMotor, 70, 200)
+    BP.set_motor_position(leftMotor, targetDist)
+    BP.set_motor_position(rightMotor, targetDist)
 
 def wait():
     print("waiting")
     time.sleep(1)
-    vB = BP.get_motor_status(BP.PORT_B)[3]
-    vC = BP.get_motor_status(BP.PORT_C)[3]
+    vB = BP.get_motor_status(leftMotor)[3]
+    vC = BP.get_motor_status(rightMotor)[3]
     while(vB != 0 or vC != 0):
-        vB = BP.get_motor_status(BP.PORT_B)[3]
-        vC = BP.get_motor_status(BP.PORT_C)[3]
+        vB = BP.get_motor_status(leftMotor)[3]
+        vC = BP.get_motor_status(rightMotor)[3]
     print("wait finished")
 
 
 def rotateDegree(degrees):
     print("rotate")
     try:
-        BP.offset_motor_encoder(BP.PORT_B, BP.get_motor_encoder(BP.PORT_B))
-        BP.offset_motor_encoder(BP.PORT_C, BP.get_motor_encoder(BP.PORT_C))
+        BP.offset_motor_encoder(leftMotor, BP.get_motor_encoder(leftMotor))
+        BP.offset_motor_encoder(rightMotor, BP.get_motor_encoder(rightMotor))
     except IOError as error:
         print (error)
     pos = calculateTargetDistance(degrees / 360 * 12.699999 * math.pi)
     print(pos)
-    BP.set_motor_position(BP.PORT_C, -pos)
-    BP.set_motor_position(BP.PORT_B, pos)
+    BP.set_motor_position(rightMotor, -pos)
+    BP.set_motor_position(leftMotor, pos)
 
 def moveSquare(num):
     for n in range(num):
@@ -77,7 +80,7 @@ def testTurn():
     moveForward(40)
 
 try:
-    #BP.reset_all()
+
     moveSquare(1)
     #testTurn()
 
