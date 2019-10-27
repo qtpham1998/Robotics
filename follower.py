@@ -7,7 +7,7 @@
 # Released under the MIT license (http://choosealicense.com/licenses/mit/).
 # For more information, see https://github.com/DexterInd/BrickPi3/blob/master/LICENSE.md
 #
-# This code is an example for reading an NXT ultrasonic sensor connected to PORT_1 of the BrickPi3
+# This code sets the robot to follow an obstacle at a set distance of 30
 # 
 # Hardware: Connect an NXT ultrasonic sensor to BrickPi3 Port 1.
 # 
@@ -21,25 +21,54 @@ import brickpi3 # import the BrickPi3 drivers
 
 BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
 
+# Motor ports
+rightMotor = BP.PORT_B
+leftMotor = BP.PORT_C
+# Sensor ports
+sonarSensor = BP.PORT_4
+
 # Configure for an NXT ultrasonic sensor.
-# BP.set_sensor_type configures the BrickPi3 for a specific sensor.
-# BP.PORT_1 specifies that the sensor will be on sensor port 1.
-# BP.SENSOR_TYPE.NXT_ULTRASONIC specifies that the sensor will be an NXT ultrasonic sensor.
-BP.set_sensor_type(BP.PORT_4, BP.SENSOR_TYPE.NXT_ULTRASONIC)
+def initialise():
+    BP.set_motor_limits(leftMotor, 70, 200)
+    BP.set_motor_limits(rightMotor, 70, 200)
+    BP.set_sensor_type(sonarSensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
+
+def resetPower():
+    BP.set_motor_power(leftMotor, 0)
+    BP.set_motor_power(rightMotor, 0)
+    wait()
+
+def move(power):
+    print("advancing")
+    BP.set_motor_power(leftMotor, power)
+    BP.set_motor_power(rightMotor, power)
+
+def wait():
+    print("waiting")
+    time.sleep(1)
+    vLeft = BP.get_motor_status(leftMotor)[3]
+    vRight = BP.get_motor_status(rightMotor)[3]
+    while(vLeft != 0 or vRight != 0):
+        vLeft = BP.get_motor_status(leftMotor)[3]
+        vRight = BP.get_motor_status(rightMotor)[3]
+    print("wait finished")
 
 try:
+    targetDist = 30
+    initialise()
     while True:
         # read and display the sensor value
-        # BP.get_sensor retrieves a sensor value.
-        # BP.PORT_1 specifies that we are looking for the value of sensor port 1.
-        # BP.get_sensor returns the sensor value (what we want to display).
         try:
-            value = BP.get_sensor(BP.PORT_4)
-            print(value)                         # print the distance in CM
+            value = BP.get_sensor(sonarSensor)
+            print(value)                         # print the distance in CMi
+            if (targetDist == value):
+               resetPower()
+            else:
+                move(diff)
         except brickpi3.SensorError as error:
             print(error)
         
-        time.sleep(0.02)  # delay for 0.02 seconds (20ms) to reduce the Raspberry Pi CPU load.
+        time.sleep(0.5) 
 
 except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
     BP.reset_all()        # Unconfigure the sensors, disable the motors, and restore the LED to the control of the BrickPi3 firmware.
