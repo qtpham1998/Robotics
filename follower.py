@@ -31,20 +31,24 @@ sonarSensor = BP.PORT_4
 def initialise():
     BP.set_motor_limits(leftMotor, 70, 200)
     BP.set_motor_limits(rightMotor, 70, 200)
+    BP.set_motor_position_kp(leftMotor, 70)
+    BP.set_motor_position_kp(rightMotor, 70)
     BP.set_sensor_type(sonarSensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
-
-def resetPower():
-    BP.set_motor_power(leftMotor, 0)
-    BP.set_motor_power(rightMotor, 0)
-    wait()
+    print("Finalised initialisation")
 
 def move(power):
-    print("advancing")
-    BP.set_motor_power(leftMotor, power)
-    BP.set_motor_power(rightMotor, power)
+    print("setting DPS as %d" % power)
+    BP.set_motor_dps(leftMotor, power)
+    BP.set_motor_dps(rightMotor, power)
+
+def resetPower():
+    print("Reset power")
+    BP.set_motor_dps(leftMotor, 0)
+    BP.set_motor_dps(rightMotor, 0)
+    wait()
 
 def wait():
-    print("waiting")
+    print("wait")
     time.sleep(1)
     vLeft = BP.get_motor_status(leftMotor)[3]
     vRight = BP.get_motor_status(rightMotor)[3]
@@ -55,16 +59,20 @@ def wait():
 
 try:
     targetDist = 30
+    threshold = 3
     initialise()
     while True:
         # read and display the sensor value
         try:
             value = BP.get_sensor(sonarSensor)
+            diff = targetDist - value
             print(value)                         # print the distance in CMi
-            if (targetDist == value):
-               resetPower()
+            if (abs(diff) < threshold):
+                resetPower()
+            elif (abs(diff) < 10):
+                move(diff * 10)
             else:
-                move(diff)
+                move(targetDist - value)
         except brickpi3.SensorError as error:
             print(error)
         
