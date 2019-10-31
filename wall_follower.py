@@ -25,23 +25,50 @@ BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be 
 rightMotor = BP.PORT_B
 leftMotor = BP.PORT_C
 # Sensor ports
-sonarSensor = BP.PORT_4
+sonarSensor = BP.PORT_2
+rightSensor = BP.PORT_4
+leftSensor = BP.PORT_3
 
 # Configure for an NXT ultrasonic sensor.
 def initialise():
     BP.set_motor_limits(leftMotor, 70, 200)
     BP.set_motor_limits(rightMotor, 70, 200)
     BP.set_sensor_type(sonarSensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
+    BP.set_sensor_type(leftSensor, BP.SENSOR_TYPE.TOUCH)
+    BP.set_sensor_type(rightSensor, BP.SENSOR_TYPE.TOUCH)
+
+def follow(degrees):
+    print("rotating %d degrees" % degrees)
+    try:
+        BP.offset_motor_encoder(rightMotor, BP.get_motor_encoder(rightMotor))
+        BP.offset_motor_encoder(leftMotor, BP.get_motor_encoder(leftMotor))
+    except IOError as error:
+        print (error)
+    BP.set_motor_dps(leftMotor, -200 + 2 * degrees)
+    BP.set_motor_dps(rightMotor, -200- 2 * degrees)
+
+def getSensorReadings():
+    return BP.get_sensor(leftSensor), BP.get_sensor(rightSensor)
+
+def moveBack():
+    print("moving back")
+    BP.set_motor_power(leftMotor, 30)
+    BP.set_motor_power(rightMotor, 30)
 
 def resetPower():
     BP.set_motor_power(leftMotor, 0)
     BP.set_motor_power(rightMotor, 0)
     wait()
 
-def move(power):
-    print("advancing")
-    BP.set_motor_power(leftMotor, power)
-    BP.set_motor_power(rightMotor, power)
+def wait():
+    print("waiting")
+    vLeft = BP.get_motor_status(leftMotor)[3]
+    vRight = BP.get_motor_status(rightMotor)[3]
+    while(vLeft != 0 or vRight != 0):
+        vLeft = BP.get_motor_status(leftMotor)[3]
+        vRight = BP.get_motor_status(rightMotor)[3]
+        time.sleep(1)
+    print("wait finished")
 
 def rotateDegrees(degrees):
     pos = 12.7 * degrees / 7.3
@@ -55,15 +82,25 @@ def rotateDegrees(degrees):
     BP.set_motor_position(rightMotor, -pos)
     BP.set_motor_position(leftMotor, pos)
 
-def wait():
-    print("waiting")
-    vLeft = BP.get_motor_status(leftMotor)[3]
-    vRight = BP.get_motor_status(rightMotor)[3]
-    while(vLeft != 0 or vRight != 0):
-        vLeft = BP.get_motor_status(leftMotor)[3]
-        vRight = BP.get_motor_status(rightMotor)[3]
-        time.sleep(0.05)
-    print("wait finished")
+def backTrack():
+    print("obstacle detected")
+    resetPower()
+    moveBack()
+    leftSense, rightSense = getSensorReadings()
+    while (leftSense == 1 or rightSense == 1):
+        time.sleep(1)
+        leftSense, rightSense = getSensorReadings()
+    resetPower()
+
+def turnRight():
+    rotateDegrees(-90)
+
+def turnLeft():
+    rotateDegrees(90)
+
+def turnAround():
+    rotateDegrees(180)
+
 
 try:
     targetDist = 30
@@ -71,12 +108,26 @@ try:
     while True:
         # read and display the sensor value
         try:
+            # Obstacle sensors readings
+            leftSense, rightSense = getSensorReadings()
+            print("Left sensor: %d; Right sensor: %d" % (leftSense, rightSense))
+            if (leftSense == 1 or rightSense == 1):
+		backTrack()
+	        if (leftSense == 1 and rightSense == 1):
+	            turnAround()
+	        elif (leftSense == 1):
+	            turnRight()
+	        elif (rightSense == 1):
+	            turnLeft()
+                wait()
+
+            # sonar sensor reading
             value = BP.get_sensor(sonarSensor)
-            print(value)                         # print the distance in CMi
-            if (targetDist == value):
-                move(30)
-            else:
-                rotateDegrees(targetDist - value)
+            print("Sensor distance: %d" % value)                         # print the distance in CMi
+            diff = targetDist - value
+            if (abs(value) == 255):
+                diff = -20
+            follow(diff)
         except brickpi3.SensorError as error:
             print(error)
         

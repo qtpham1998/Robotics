@@ -25,7 +25,7 @@ BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be 
 rightMotor = BP.PORT_B
 leftMotor = BP.PORT_C
 # Sensor ports
-sonarSensor = BP.PORT_4
+sonarSensor = BP.PORT_2
 
 # Configure for an NXT ultrasonic sensor.
 def initialise():

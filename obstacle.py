@@ -23,8 +23,8 @@ import math
 BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
 
 # Motor ports
-rightMotor = BP.PORT_B
-leftMotor = BP.PORT_C
+rightMotor = BP.PORT_C
+leftMotor = BP.PORT_B
 # Sensor ports 
 rightSensor = BP.PORT_4
 leftSensor = BP.PORT_3
@@ -87,10 +87,10 @@ def backTrack():
     resetPower()
 
 def turnRight():
-    rotateDegrees(-90)
+    rotateDegrees(90)
 
 def turnLeft():
-    rotateDegrees(90)
+    rotateDegrees(-90)
 
 def turnAround():
     rotateDegrees(180)
