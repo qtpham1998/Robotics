@@ -26,7 +26,7 @@ leftMotor = BP.PORT_B
 rightMotor = BP.PORT_C
 
 def calculateTargetDistance(dist):
-    return (dist / (7.3 * math.pi)) * 360
+    return 1.5 * (dist / (7.3 * math.pi)) * 360
 
 def moveForward(dist): # distance in cm
     try:
@@ -59,10 +59,10 @@ def rotateDegree(degrees):
         BP.offset_motor_encoder(rightMotor, BP.get_motor_encoder(rightMotor))
     except IOError as error:
         print (error)
-    pos = calculateTargetDistance(degrees / 360 * 12.699999 * math.pi)
+    pos = calculateTargetDistance(degrees / 360 * 14 * math.pi)
     print(pos)
-    BP.set_motor_position(rightMotor, -pos)
-    BP.set_motor_position(leftMotor, pos)
+    BP.set_motor_position(rightMotor, pos)
+    BP.set_motor_position(leftMotor, -pos)
 
 def moveSquare(num):
     for n in range(num):

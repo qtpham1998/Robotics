@@ -3,15 +3,19 @@ from __future__ import division       #                           ''
 
 import time     # import the time library for the sleep function
 import brickpi3 # import the BrickPi3 drivers
-from math import pi, cos, sin
 import random
+from math import pi, cos, sin
+from os import system
 
 BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
 
-NUMBER_OF_PARTICLES = 100
-particleSet = []
 leftMotor = BP.PORT_B
 rightMotor = BP.PORT_C
+NUMBER_OF_PARTICLES = 100
+OFFSETX = 400
+OFFSETY = 200
+MULT = 10
+particleSet = []
 
 class Particle:
     def __init__(self, x, y, theta, w=1/NUMBER_OF_PARTICLES):
@@ -20,31 +24,46 @@ class Particle:
         self.theta = theta
         self.w = w
 
-    def calcX(dist):
-        return self.x + (dist + random.gauss(0, 5)) * cos(self.theta / 180 * pi)
+    def calcX(self, dist):
+        return self.x + (dist + random.gauss(0, 0.5)) * cos(self.theta / 180 * pi)
 
-    def calcY(dist):
-        return self.y + (dist + random.gauss(0, 5)) * sin(self.theta / 180 * pi)
+    def calcY(self, dist):
+        return self.y + (dist + random.gauss(0, 0.5)) * sin(self.theta / 180 * pi)
 
-    def calcTheta():
-        return self.theta + random.gauss(0, 5)
+    def calcTheta(self, degrees):
+        return self.theta + degrees + random.gauss(0, 1) 
+    
+    def updateParticleCoords(self, dist):
+        #return Particle(self.calcX(dist), self.calcY(dist), self.theta)
+        return updateParticle(self, dist, None)
+    
+    def updateParticleAngle(self, degrees):
+        #return Particle(self.x, self.y, self.calcTheta(degrees))
+        return updateParticle(self, None, degrees)
 
-    def updateParticleCoords(dist):
-	self.x = self.calcX(dist)
-	self.y = self.calcY(dist)
-
-    def updateParticleAngle(degrees):
-	self.theta = self.calcTheta(degrees)
-    def getCoords():
-        return (self.x, self.y, self.theta)
+    def updateParticle(self, dist, degrees):
+        x = self.x
+        y = self.y
+        theta = self.theta
+        if(dist != None):
+            x = self.calcX(dist)
+            y = self.calcY(dist)
+        if(degrees != None):
+            theta = self.calcTheta(degrees)
+        return Particle(x, y, theta)
+        
+    def getCoords(self):
+        return (self.x * MULT + OFFSETX, self.y * MULT + OFFSETY, self.theta)
 
 def initialise():
-    particleSet = [Particle(0,0,0) for i in range(NUMBER_OF_PARTICLES)]
+    system('clear')
+    for i in range(NUMBER_OF_PARTICLES):
+        particleSet.append(Particle(0,0,0))
     BP.set_motor_limits(leftMotor, 70, 200)
     BP.set_motor_limits(rightMotor, 70, 200)
 
 def calculateTargetDistance(dist):
-    return 1.5 * (dist / (7.3 * math.pi)) * 360
+    return (dist / (7 * pi)) * 360
 
 def resetEncoder():
     try:
@@ -74,45 +93,70 @@ def moveForward(dist): # distance in cm
 def rotateDegree(degrees):
     print("Rotating %d degrees" %degrees)
     resetEncoder()
-    pos = calculateTargetDistance(degrees / 360 * 14 * math.pi)
+    pos = calculateTargetDistance(degrees / 360 * 15 * pi)
     BP.set_motor_position(rightMotor, pos)
     BP.set_motor_position(leftMotor, -pos)
     updateParticles(None, degrees)
-    drawParticleSet()
-
-def moveLine(dist):
-    for i in range(4):
+    
+def moveLine(dist, repeat):
+    for i in range(repeat):
         moveForward(dist)
         wait()
         updateParticles(dist, None)
-	drawParticleSet()
+        
+def getAverageCoordiante():
+    xCoord = 0
+    yCoord = 0
+    theta = 0;
+    for i in range(len(particleSet));
+        coordinates = particleSet[i].getCoords()
+        xCoord += coordinates[0]
+        yCoord += coordinates[1]
+        theta += coordinates[2]
+    return (xCoord / NUMBER_OF_PARTICLES, yCoord / NUMBER_OF_PARTICLES, theta / NUMBER_OF_PARTICLES)    
+        
 
 def updateParticles(dist, degrees):
-    if dist != None:
-        for p in particleSet:
-            p.updateParticleCoords(dist)
-    if degrees != None:
-        for p in particleSet:
-            p.updateParticleAngle(degrees)
+    for i in range(len(particleSet)):
+        particleSet[i] = particleSet[i].updateParticle(dist, degrees)
+    drawParticleSet()
+    #newSet = []
+    #for p in particleSet:
+    #    newSet.append(p.updateParticle(dist, degrees))
+    #particleSet =  newSet
 
-def moveSquare(num):
+def moveSquare(num, size):
     for n in range(num):
         for i in range(4):
-            moveLine(10)
+            moveLine(size, 4)
             wait()
             rotateDegree(90)
             wait()
 
 def coordAxis():
-    print("drawLine:" + str((0, 0, 50, 50))
-
+    print("drawLine:" + str((0, 0, 0, 5000)))
+    print("drawLine:" + str((0, 0, 5000, 0)))
+          
+def drawSquare(size):
+    diff = size * MULT * 4
+    print("drawLine:" + str((OFFSETX, OFFSETY, OFFSETX, OFFSETY + diff)))
+    print("drawLine:" + str((OFFSETX, OFFSETY, OFFSETX + diff, OFFSETY)))
+    print("drawLine:" + str((OFFSETX + diff, OFFSETY, OFFSETX + diff, OFFSETY + diff)))
+    print("drawLine:" + str((OFFSETX, OFFSETY + diff, OFFSETX + diff, OFFSETY + diff)))
+    
 def drawParticleSet():
-    particles = [p.getCoords() for p in range particleSet]
+    particles = [p.getCoords() for p in particleSet]
     print("drawParticles:" + str(particles))
+    
+    
+def navigateToWaypoint(float X, float Y):
+    
+    
 
 try:
     initialise()
-    moveSquare(1)
+    drawSquare(10)
+    moveSquare(1, 10)
 
 
 except KeyboardInterrupt:
