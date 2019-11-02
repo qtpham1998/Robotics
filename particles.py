@@ -29,12 +29,12 @@ class Particle:
     def calcTheta():
         return self.theta + random.gauss(0, 5)
 
-    def generateParticleLine(dist):
-        return Particle(self.calcX(dist), self.calcY(dist), self.theta)
+    def updateParticleCoords(dist):
+	self.x = self.calcX(dist)
+	self.y = self.calcY(dist)
 
-    def generateParticleRotate(degrees):
-        return Particle(self.x, self.y, self.calcTheta(degrees))
-
+    def updateParticleAngle(degrees):
+	self.theta = self.calcTheta(degrees)
     def getCoords():
         return (self.x, self.y, self.theta)
 
@@ -77,12 +77,23 @@ def rotateDegree(degrees):
     pos = calculateTargetDistance(degrees / 360 * 14 * math.pi)
     BP.set_motor_position(rightMotor, pos)
     BP.set_motor_position(leftMotor, -pos)
+    updateParticles(None, degrees)
+    drawParticleSet()
 
 def moveLine(dist):
     for i in range(4):
         moveForward(dist)
         wait()
-        #calculate new particles
+        updateParticles(dist, None)
+	drawParticleSet()
+
+def updateParticles(dist, degrees):
+    if dist != None:
+        for p in particleSet:
+            p.updateParticleCoords(dist)
+    if degrees != None:
+        for p in particleSet:
+            p.updateParticleAngle(degrees)
 
 def moveSquare(num):
     for n in range(num):
@@ -92,10 +103,10 @@ def moveSquare(num):
             rotateDegree(90)
             wait()
 
-def coordAxis:
-    print("drawLine:" + str())
+def coordAxis():
+    print("drawLine:" + str((0, 0, 50, 50))
 
-def drawParticleSet:
+def drawParticleSet():
     particles = [p.getCoords() for p in range particleSet]
     print("drawParticles:" + str(particles))
 
