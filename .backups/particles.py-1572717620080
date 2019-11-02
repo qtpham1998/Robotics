@@ -187,7 +187,7 @@ def navigate():
 
 try:
     initialise()
-    navigateToWaypoint(0.1,-0.1)
+    navigateToWaypoint(-0.1,-0.1)
         
     #drawSquare(10)
     #moveSquare(1, 10)

@@ -4,7 +4,7 @@ from __future__ import division       #                           ''
 import time     # import the time library for the sleep function
 import brickpi3 # import the BrickPi3 drivers
 import random
-from math import pi, cos, sin, atan2, sqrt
+from math import pi, cos, sin
 from os import system
 
 BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
@@ -154,7 +154,7 @@ def navigateToWaypoint(X,Y):
     yCoordinate = coordinates[1]
     theta = coordinates[2]
     xDiff = abs(X*100 - xCoordinate)
-    yDiff = abs(Y*100 - yCoordinate)
+    yDiif = abs(Y*100 - yCoordinate)
     newTheta = atan2(yDiff, xDiff) * 180 / pi
     degree = 0
     if(X * 100 > xCoordinate and Y * 100 < yCoordinate):
@@ -187,7 +187,7 @@ def navigate():
 
 try:
     initialise()
-    navigateToWaypoint(0.1,-0.1)
+    navigate()
         
     #drawSquare(10)
     #moveSquare(1, 10)
