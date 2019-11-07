@@ -4,70 +4,49 @@ from __future__ import division       #                           ''
 import time     # import the time library for the sleep function
 import brickpi3 # import the BrickPi3 drivers
 import random
-from math import pi, cos, sin, atan2, sqrt
+from math import pi, cos, sin, tan, atan2, sqrt, exp
 from os import system
+import particleDataStructure
 
 BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
 
+# MOTOR PORTS
 leftMotor = BP.PORT_B
 rightMotor = BP.PORT_C
-NUMBER_OF_PARTICLES = 100
+# SENSOR PORTS
+sonarSensor = BP.PORT_4
+
+# OFFSETS
 OFFSETX = 400
 OFFSETY = 200
+SENSOR_OFFSET = 12.5 #cm
 MULT = 10
-particleSet = []
 
-class Particle:
-    def __init__(self, x, y, theta, size,w=1/NUMBER_OF_PARTICLES):
-        self.x = x
-        self.y = y
-        self.theta = theta
-        self.size = size
-        self.w = w
 
-    def calcX(self, dist):
-        return self.x + (dist + random.gauss(0, 0.5)) * cos(self.theta / 180 * pi)
-
-    def calcY(self, dist):
-        return self.y + (dist + random.gauss(0, 0.5)) * sin(self.theta / 180 * pi)
-
-    def calcTheta(self, degrees):
-        return self.theta - (degrees + random.gauss(0, 1.5)) 
-    
-    def updateParticleCoords(self, dist):
-        #return Particle(self.calcX(dist), self.calcY(dist), self.theta)
-        return updateParticle(self, dist, None)
-    
-    def updateParticleAngle(self, degrees):
-        #return Particle(self.x, self.y, self.calcTheta(degrees))
-        return updateParticle(self, None, degrees)
-
-    def updateParticle(self, dist, degrees):
-        x = self.x
-        y = self.y
-        theta = self.theta
-        if(dist != None):
-            x = self.calcX(dist)
-            y = self.calcY(dist)
-            theta = self.calcTheta(0)
-        if(degrees != None):
-            theta = self.calcTheta(degrees)
-        return Particle(x, y, theta, self.size)
-        
-    def getCoords(self):
-        return (self.x * MULT + OFFSETX, self.y * MULT + OFFSETY + self.size * MULT * 4 , self.theta)
-
-def initialise(size):
+def initialise():
+    '''
+    Prepares system and robot
+    '''
     system('clear')
-    for i in range(NUMBER_OF_PARTICLES):
-        particleSet.append(Particle(0,0,0,size))
+    global particleSet
+    particletSet.initialise()
+    BP.set_sensor_type(sonarSensor, BP.SENSOR_TYPE.NXT_ULTRASONIC)
     BP.set_motor_limits(leftMotor, 70, 200)
     BP.set_motor_limits(rightMotor, 70, 200)
 
 def calculateTargetDistance(dist):
+    '''
+    Calculates the motor position needed to travel given distance
+    @param dist The distance to travel
+    @return The needed motor position
+    '''
     return (dist / (7 * pi)) * 360
 
 def resetEncoder():
+    '''
+    Reset the motor encoder offset
+    @throws IOError
+    '''
     try:
         BP.offset_motor_encoder(leftMotor, BP.get_motor_encoder(leftMotor))
         BP.offset_motor_encoder(rightMotor, BP.get_motor_encoder(rightMotor))
@@ -75,9 +54,16 @@ def resetEncoder():
         print (error)
 
 def getMotorDps():
+    '''
+    Gets the motor velocity (dps)
+    @return Left motor velocity, Right motor velocity
+    '''
     return BP.get_motor_status(leftMotor)[3], BP.get_motor_status(rightMotor)[3]
 
 def wait():
+    '''
+    Waits for the robot to stop moving
+    '''
     print("Waiting for robot to stop.")
     time.sleep(1)
     vLeft, vRight = getMotorDps()
@@ -86,6 +72,10 @@ def wait():
     print("Wait finished")
 
 def moveForward(dist): # distance in cm
+    '''
+    Moves forward for a given distance
+    @param dist The distance to move
+    '''
     print("Moving forward %d cm" %dist)
     resetEncoder()
     targetDist = calculateTargetDistance(dist) 
@@ -93,6 +83,10 @@ def moveForward(dist): # distance in cm
     BP.set_motor_position(rightMotor, -targetDist)
 
 def rotateDegree(degrees):
+    '''
+    Rotates left a certain number of degrees
+    @param degrees The angle to rotate
+    '''
     print("Rotating %d degrees" %degrees)
     resetEncoder()
     pos = calculateTargetDistance(degrees / 360 * 13.0 * pi)
@@ -115,66 +109,40 @@ def getAverageCoordinate():
     xCoord = 0
     yCoord = 0
     theta = 0;
-    for i in range(len(particleSet)):
-        xCoord += particleSet[i].x
-        yCoord += particleSet[i].y
-        theta += particleSet[i].theta
-    return (xCoord/ NUMBER_OF_PARTICLES, yCoord/ NUMBER_OF_PARTICLES, theta/ NUMBER_OF_PARTICLES)        
-        
+    for p in particleSet:
+        xCoord += p.x
+        yCoord += p.y
+        theta += p.theta
+    return xCoord/ NUMBER_OF_PARTICLES, yCoord/ NUMBER_OF_PARTICLES, theta/ NUMBER_OF_PARTICLES        
 
 def updateParticles(dist, degrees):
     for i in range(len(particleSet)):
         particleSet[i] = particleSet[i].updateParticle(dist, degrees)
-    drawParticleSet()
-    #newSet = []
-    #for p in particleSet:
-    #    newSet.append(p.updateParticle(dist, degrees))
-    #particleSet =  newSet
-
-def moveSquare(num, size):
-    for n in range(num):
-        for i in range(4):
-            moveLine(size, 40)
-            wait()
-            rotateDegree(90)
-            wait()
-
-def coordAxis():
-    print("drawLine:" + str((0, 0, 0, 5000)))
-    print("drawLine:" + str((0, 0, 5000, 0)))
-          
-def drawSquare(size):
-    diff = size * MULT * 4
-    print("drawLine:" + str((OFFSETX, OFFSETY, OFFSETX, OFFSETY + diff)))
-    print("drawLine:" + str((OFFSETX, OFFSETY, OFFSETX + diff, OFFSETY)))
-    print("drawLine:" + str((OFFSETX + diff, OFFSETY, OFFSETX + diff, OFFSETY + diff)))
-    print("drawLine:" + str((OFFSETX, OFFSETY + diff, OFFSETX + diff, OFFSETY + diff)))
     
-def drawParticleSet():
-    particles = [p.getCoords() for p in particleSet]
-    print("drawParticles:" + str(particles))
-    
+def sensorUpdate():
+    reading = BP.get_sensor(sonarSensor)
+    for p in particleSet:
+        p.w = p.w * calculate_likelihood(p.x, p.y, p.theta, reading)
     
 def navigateToWaypoint(X,Y):
-    coordinates = getAverageCoordinate()
-    xCoordinate = coordinates[0]
+    xCoordinate, yCoordinate, theta = getAverageCoordinate()
     print("the current X coordinate is " + str(xCoordinate))
-    yCoordinate = coordinates[1]
     print("the current Y coordinate is " + str(yCoordinate))
-    theta = coordinates[2]
     print("the current angle is " + str(theta))
+    
     xDiff = abs(X*100 - xCoordinate)
     yDiff = abs(Y*100 - yCoordinate)
     newTheta = atan2(yDiff, xDiff) * 180 / pi
     degree = 0
-    if(X * 100 > xCoordinate and Y * 100 < yCoordinate):
+    
+    if (X * 100 > xCoordinate and Y * 100 < yCoordinate):
         newTheta = -1 * newTheta
-    elif(X * 100 < xCoordinate and Y * 100 < yCoordinate):
+    elif (X * 100 < xCoordinate and Y * 100 < yCoordinate):
         newTheta = -180 + newTheta
-    elif(X * 100 < xCoordinate and Y * 100 > yCoordinate):
+    elif (X * 100 < xCoordinate and Y * 100 > yCoordinate):
         newTheta = 180 - newTheta
     
-    if(theta < newTheta):
+    if (theta < newTheta):
             degree = newTheta - theta
     else:
             degree = 360 - (theta - newTheta)
@@ -183,25 +151,81 @@ def navigateToWaypoint(X,Y):
     wait()
     moveLine(10, sqrt(xDiff * xDiff + yDiff * yDiff))
             
-        
-        
+def calculate_likelihood(x, y, theta, z):
+    '''
+    Calculates likelihood given the robot coordinates and sensor reading
+    @param x The x coordinate
+    @param y The y coordinate
+    @param theta The angle relative to the x-axis
+    @param z The sonar sensor reading
+    @return The single likelihood value
+    '''
+    m = getWall(x, y, theta)[0]
+    sd = 2.5
+    return exp(-(z - m)**2 / (2 * sd**2)) + 0.1
     
+def getWall(x, y, theta):
+    '''
+    Gets the wall that the robot is facing
+    @param x The x coordinate of the robot
+    @param y The y coordinate of the robot
+    @param theta The angle of the robot
+    @return (m, w) tuple where m is the distance from the robot to the wall w
+    '''
+    global mymap
+    minDist = -1
+    radians = toRads(theta)
+    facingWalls = []
+    for w in mymap.walls:
+        m = 0
+        num = (w[3] - w[1]) * (w[0] - x) - (w[2] - w[0]) * (w[1] - y)
+        den = (w[3] - w[1]) * cos(radians) - (w[2] - w[0]) * sin(radians)
+        if (den == 0):
+            m = num / den
+        if (m > 0 and intersect(x, y, theta, m, w):
+            facingWalls.append((m, w))
+    if (not facingWalls):
+        return 0
+    else:
+        return min(facingWalls, key = lambda w: w[0])
+ 
+def intersect(x, y, theta, m, w):
+    '''
+    Checks whether the robot's line of sight intersects with the wall
+    @param x The x coordinate of the robot
+    @param y The y coordinate of the robot
+    @param theta The angle of the robot
+    @param m The distance from the robot to the wall
+    @param w The wall coordinates
+    @return Whether the robot is facing the wall or not
+    '''
+    interX = x + m * cos(toRads(theta))
+    interY = y + m * sin(toRads(theta))
+    return w[0] <= interX and interX <= w[2] and w[1] <= interY and interY <= w[3]
+
 def navigate():
+    '''
+    Navigates to the coordinates input by user
+    '''
     while(True):
         print("Do you want to start now? Press N to stop, any other key to start")
         start = raw_input()
         if(start == "N"):
             break
-        print("Please enter an X coordinate in meters")
-        x = input()
-        print("Please input an Y coordinate in meters")
-        y = input()
+        x = input("Please enter an X coordinate in meters: ")
+        y = input("Please input an Y coordinate in meters: ")
         navigateToWaypoint(x,y)
         
-    
+def toRads(theta):
+    '''
+    Converts angle in degrees to radians
+    @param theta The angle in degrees
+    @return The angle in radians
+    '''
+    return theta * pi / 180
 
 try:
-    initialise(10)
+    initialise()
     navigate() 
     #drawSquare(10)
     #moveSquare(1, 10)
@@ -209,3 +233,4 @@ try:
 
 except KeyboardInterrupt:
     BP.reset_all()
+

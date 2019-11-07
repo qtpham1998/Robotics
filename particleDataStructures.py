@@ -6,6 +6,9 @@ import time
 import random
 import math
 
+# Constants
+NUMBER_OF_PARTICLES = 100
+
 # Functions to generate some dummy particles data:
 def calcX():
     return random.gauss(80,3) + 70*(math.sin(t)); # in cm
@@ -64,14 +67,50 @@ class Map:
 # Simple Particles set
 class Particles:
     def __init__(self):
-        self.n = 10;    
+        self.n = NUMBER_OF_PARTICLES;
         self.data = [];
-
-    def update(self):
-        self.data = [(calcX(), calcY(), calcTheta(), calcW()) for i in range(self.n)];
+    
+    def initialise():
+        self.data = [Particle(0,0,0) for i in range(self.n)];
     
     def draw(self):
         canvas.drawParticles(self.data);
+
+# A Particle
+class Particle:
+    def __init__(self, x, y, theta, w=1/NUMBER_OF_PARTICLES):
+        self.x = x
+        self.y = y
+        self.theta = theta
+        self.w = w
+
+    def calcX(self, dist):
+        return self.x + (dist + random.gauss(0, 0.5)) * cos(self.theta / 180 * pi)
+
+    def calcY(self, dist):
+        return self.y + (dist + random.gauss(0, 0.5)) * sin(self.theta / 180 * pi)
+
+    def calcTheta(self, degrees):
+        return self.theta - (degrees + random.gauss(0, 1.5)) 
+    
+    def updateParticleCoords(self, dist):
+        return updateParticle(self, dist, 0)
+    
+    def updateParticleAngle(self, degrees):
+        return updateParticle(self, None, degrees)
+
+    def updateParticle(self, dist, degrees):
+        x = self.x
+        y = self.y
+        theta = self.calcTheta(degrees)
+        if(dist != None):
+            x = self.calcX(dist)
+            y = self.calcY(dist)
+        return Particle(x, y, theta)
+        
+    def getCoords(self):
+        return (self.x, self.y, self.theta, self.w)
+
 
 canvas = Canvas();	# global canvas we are going to draw on
 
@@ -95,11 +134,11 @@ mymap.add_wall((210,84,210,0));     # g
 mymap.add_wall((210,0,0,0));        # h
 mymap.draw();
 
-particles = Particles();
+particleSet	 = Particles();
 
-t = 0;
-while True:
-    particles.update();
-    particles.draw();
-    t += 0.05;
-    time.sleep(0.05);
+t = 12.5;
+#while True:
+#    particles.update();
+#    particles.draw();
+#    t += 0.05;
+#    time.sleep(0.05);
