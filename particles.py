@@ -18,10 +18,11 @@ MULT = 10
 particleSet = []
 
 class Particle:
-    def __init__(self, x, y, theta, w=1/NUMBER_OF_PARTICLES):
+    def __init__(self, x, y, theta, size,w=1/NUMBER_OF_PARTICLES):
         self.x = x
         self.y = y
         self.theta = theta
+        self.size = size
         self.w = w
 
     def calcX(self, dist):
@@ -31,7 +32,7 @@ class Particle:
         return self.y + (dist + random.gauss(0, 0.5)) * sin(self.theta / 180 * pi)
 
     def calcTheta(self, degrees):
-        return self.theta + degrees + random.gauss(0, 1) 
+        return self.theta - (degrees + random.gauss(0, 1.5)) 
     
     def updateParticleCoords(self, dist):
         #return Particle(self.calcX(dist), self.calcY(dist), self.theta)
@@ -48,17 +49,18 @@ class Particle:
         if(dist != None):
             x = self.calcX(dist)
             y = self.calcY(dist)
+            theta = self.calcTheta(0)
         if(degrees != None):
             theta = self.calcTheta(degrees)
-        return Particle(x, y, theta)
+        return Particle(x, y, theta, self.size)
         
     def getCoords(self):
-        return (self.x * MULT + OFFSETX, self.y * MULT + OFFSETY, self.theta)
+        return (self.x * MULT + OFFSETX, self.y * MULT + OFFSETY + self.size * MULT * 4 , self.theta)
 
-def initialise():
+def initialise(size):
     system('clear')
     for i in range(NUMBER_OF_PARTICLES):
-        particleSet.append(Particle(0,0,0))
+        particleSet.append(Particle(0,0,0,size))
     BP.set_motor_limits(leftMotor, 70, 200)
     BP.set_motor_limits(rightMotor, 70, 200)
 
@@ -93,13 +95,18 @@ def moveForward(dist): # distance in cm
 def rotateDegree(degrees):
     print("Rotating %d degrees" %degrees)
     resetEncoder()
-    pos = calculateTargetDistance(degrees / 360 * 15 * pi)
+    pos = calculateTargetDistance(degrees / 360 * 13.0 * pi)
     BP.set_motor_position(rightMotor, pos)
     BP.set_motor_position(leftMotor, -pos)
     updateParticles(None, degrees)
     
-def moveLine(dist, repeat):
-    for i in range(repeat):
+def moveLine(interval, dist):
+    while (dist >= interval):
+        moveForward(interval)
+        wait()
+        updateParticles(interval, None)
+        dist -= interval
+    if(dist > 0):
         moveForward(dist)
         wait()
         updateParticles(dist, None)
@@ -127,7 +134,7 @@ def updateParticles(dist, degrees):
 def moveSquare(num, size):
     for n in range(num):
         for i in range(4):
-            moveLine(size, 4)
+            moveLine(size, 40)
             wait()
             rotateDegree(90)
             wait()
@@ -151,8 +158,11 @@ def drawParticleSet():
 def navigateToWaypoint(X,Y):
     coordinates = getAverageCoordinate()
     xCoordinate = coordinates[0]
+    print("the current X coordinate is " + str(xCoordinate))
     yCoordinate = coordinates[1]
+    print("the current Y coordinate is " + str(yCoordinate))
     theta = coordinates[2]
+    print("the current angle is " + str(theta))
     xDiff = abs(X*100 - xCoordinate)
     yDiff = abs(Y*100 - yCoordinate)
     newTheta = atan2(yDiff, xDiff) * 180 / pi
@@ -168,15 +178,20 @@ def navigateToWaypoint(X,Y):
             degree = newTheta - theta
     else:
             degree = 360 - (theta - newTheta)
-    rotateDegree(degree)
+    if degree % 360 != 0:                          
+        rotateDegree(degree % 360)
     wait()
-    moveLine(sqrt(xDiff * xDiff + yDiff * yDiff), 1)
+    moveLine(10, sqrt(xDiff * xDiff + yDiff * yDiff))
             
         
         
     
 def navigate():
     while(True):
+        print("Do you want to start now? Press N to stop, any other key to start")
+        start = raw_input()
+        if(start == "N"):
+            break
         print("Please enter an X coordinate in meters")
         x = input()
         print("Please input an Y coordinate in meters")
@@ -186,9 +201,8 @@ def navigate():
     
 
 try:
-    initialise()
-    navigateToWaypoint(0.1,-0.1)
-        
+    initialise(10)
+    navigate() 
     #drawSquare(10)
     #moveSquare(1, 10)
 
