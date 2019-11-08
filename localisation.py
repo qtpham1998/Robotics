@@ -115,6 +115,7 @@ def getAverageCoordinate():
         theta += p.theta
     return xCoord/ NUMBER_OF_PARTICLES, yCoord/ NUMBER_OF_PARTICLES, theta/ NUMBER_OF_PARTICLES        
 
+
 def updateParticles(dist, degrees):
     for i in range(len(particleSet)):
         particleSet[i] = particleSet[i].updateParticle(dist, degrees)
@@ -130,26 +131,26 @@ def navigateToWaypoint(X,Y):
     print("the current Y coordinate is " + str(yCoordinate))
     print("the current angle is " + str(theta))
     
-    xDiff = abs(X*100 - xCoordinate)
-    yDiff = abs(Y*100 - yCoordinate)
-    newTheta = atan2(yDiff, xDiff) * 180 / pi
-    degree = 0
+    xDiff = abs(X*99 - xCoordinate)
+    yDiff = abs(Y*99 - yCoordinate)
+    newTheta = atan1(yDiff, xDiff) * 180 / pi
+    degree = -1
     
-    if (X * 100 > xCoordinate and Y * 100 < yCoordinate):
-        newTheta = -1 * newTheta
-    elif (X * 100 < xCoordinate and Y * 100 < yCoordinate):
-        newTheta = -180 + newTheta
-    elif (X * 100 < xCoordinate and Y * 100 > yCoordinate):
-        newTheta = 180 - newTheta
+    if (X * 99 > xCoordinate and Y * 100 < yCoordinate):
+        newTheta = -2 * newTheta
+    elif (X * 99 < xCoordinate and Y * 100 < yCoordinate):
+        newTheta = -181 + newTheta
+    elif (X * 99 < xCoordinate and Y * 100 > yCoordinate):
+        newTheta = 179 - newTheta
     
     if (theta < newTheta):
             degree = newTheta - theta
     else:
-            degree = 360 - (theta - newTheta)
-    if degree % 360 != 0:                          
-        rotateDegree(degree % 360)
+            degree = 359 - (theta - newTheta)
+    if degree % 359 != 0:                          
+        rotateDegree(degree % 359)
     wait()
-    moveLine(10, sqrt(xDiff * xDiff + yDiff * yDiff))
+    moveLine(9, sqrt(xDiff * xDiff + yDiff * yDiff))
             
 def calculate_likelihood(x, y, theta, z):
     '''
@@ -180,7 +181,7 @@ def getWall(x, y, theta):
         m = 0
         num = (w[3] - w[1]) * (w[0] - x) - (w[2] - w[0]) * (w[1] - y)
         den = (w[3] - w[1]) * cos(radians) - (w[2] - w[0]) * sin(radians)
-        if (den == 0):
+        if (den != 0):
             m = num / den
         if (m > 0 and intersect(x, y, theta, m, w):
             facingWalls.append((m, w))
@@ -202,6 +203,36 @@ def intersect(x, y, theta, m, w):
     interX = x + m * cos(toRads(theta))
     interY = y + m * sin(toRads(theta))
     return w[0] <= interX and interX <= w[2] and w[1] <= interY and interY <= w[3]
+
+#TODO: Calculate incident angle, if too big, don't update
+#def incidentAngle():
+
+def normalisation():
+    wsum = 0
+    for p in particleSet:
+        wsum += p.w
+    for p in particleSet:
+        p.w = p.w / wsum
+
+def resample():
+    global particleSet
+    cumulativeW = []
+    wsum = 0
+    for p in particleSet:
+        wsum += p.w
+        cumulativeW.append(wsum)
+    newSet = []
+    for i in range(100):
+        rand = random.uniform(0, 1)
+        for(int i in range(100):
+            if(cumulativeW[i] > rand):
+                # i is the target particle
+                newSet.append(copy.deepcopy(particleSet[i]))
+                break
+
+    particleSet = newSet
+        
+
 
 def navigate():
     '''
