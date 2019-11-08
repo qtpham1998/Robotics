@@ -22,6 +22,8 @@ OFFSETY = 200
 SENSOR_OFFSET = 12.5 #cm
 MULT = 10
 
+N = 100 #Particle Num
+
 
 def initialise():
     '''
@@ -222,14 +224,13 @@ def resample():
         wsum += p.w
         cumulativeW.append(wsum)
     newSet = []
-    for i in range(100):
+    for i in range(N):
         rand = random.uniform(0, 1)
-        for(int i in range(100):
+        for(int i in range(N):
             if(cumulativeW[i] > rand):
                 # i is the target particle
                 newSet.append(copy.deepcopy(particleSet[i]))
                 break
-
     particleSet = newSet
         
 
