@@ -114,7 +114,7 @@ def moveLine(interval, dist):
 def getAverageCoordinate():
     xCoord = 0
     yCoord = 0
-    theta = 0;
+    theta = 0
     for i in range(len(particleSet)):
         xCoord += particleSet[i].x
         yCoord += particleSet[i].y
