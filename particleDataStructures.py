@@ -4,7 +4,7 @@
 
 import time
 import random
-import math
+from math import cos, sin, pi
 
 # Constants
 NUMBER_OF_PARTICLES = 100
@@ -69,10 +69,30 @@ class Particles:
     def __init__(self):
         self.n = NUMBER_OF_PARTICLES
         self.data = []
-    
-    def initialise(self):
-        self.data = [Particle(0,0,0) for i in range(self.n)]
-    
+        pos1 = 168/420
+        pos2 = 210/420 + pos1
+        pos3 = 1
+        for i in range(self.n):
+            area = random.uniform(0, 1)
+            if area < pos1:
+                x1 = 0
+                x2 = 84
+                y1 = 0
+                y2 = 168
+            elif area < pos2:
+                x1 = 84
+                x2 = 168
+                y1 = 0
+                y2 = 210
+            else:
+                x1 = 168
+                x2 = 210
+                y1 = 0
+                y2 = 84
+            self.data.append(Particle(random.uniform(x1, x2), random.uniform(y1, y2), random.uniform(0, 360)))
+
+
+
     def draw(self):
         canvas.drawParticles(self.data)
 

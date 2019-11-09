@@ -33,15 +33,15 @@ def initialise():
     Prepares system and robot
     '''
     system('clear')
-    movement.setBP(BP)
+    #movement.setBP(BP)
 
 def localisation():
     for i in range(50):
         try:
             particleSet = MCL.MCL(BP.get_sensor(sonarSensor))
             for p in particleSet:
-                print("drawParticles:" + str((p.x, p.y, p.theta, 1/100)))
-                print(str((p.x, p.y, p.theta, 1/100)))
+                print("drawParticles:" + str((p.x, p.y, p.theta, p.w)))
+                print(str((p.x, p.y, p.theta, p.w)))
             time.sleep(0.2)
         except brickpi3.SensorError as error:
             print(error)
