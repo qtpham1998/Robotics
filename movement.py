@@ -75,6 +75,11 @@ class Movement:
         self.MCL.updateParticles(0, degrees)
 
     def moveLine(self, interval, dist):
+        '''
+        Moves 'dist' metres in intervals of 'interval'
+        @param interval Distance to move at a time
+        @param dist Total distance to move
+        '''
         while (dist >= interval):
             self.moveForward(interval)
             self.wait()
