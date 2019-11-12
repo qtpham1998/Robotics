@@ -53,11 +53,12 @@ mcl = MCL.MCL()
 mov = movement.Movement(BP, mcl)
 
 def navigate():
-    coordinates = [(84, 30), (180, 30), (180, 54), (138, 54), (138, 168), (114, 168), (114, 84), (84, 84), (84, 30)]
+    coordinates = [(0.84, 0.30), (1.80, 0.30), (1.80, 0.54), (1.38, 0.54), (1.38, 1.68), (1.14, 1.68), (1.14, 0.84), (0.84, 0.84), (0.84, 0.30)]
     for c in coordinates:
         x = c[0]
         y = c[1]
         navigateToWaypoint(x, y, mcl, mov)
+        reading = BP.get_sensor(sonarSensor)
         while not isinstance(reading, int):
             try:
                 reading = BP.get_sensor(sonarSensor)

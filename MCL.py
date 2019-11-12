@@ -38,10 +38,10 @@ class MCL:
         yCoord = 0
         theta = 0
         for p in self.particleSet:
-            xCoord += p.x
-            yCoord += p.y
-            theta += p.theta
-        return xCoord/ NUMBER_OF_PARTICLES, yCoord/ NUMBER_OF_PARTICLES, theta/NUMBER_OF_PARTICLES        
+            xCoord += p.x * p.w
+            yCoord += p.y * p.w
+            theta += p.theta * p.w
+        return xCoord, yCoord, theta     
 
 
     def updateParticles(self, dist, degrees):
