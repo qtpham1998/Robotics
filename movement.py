@@ -76,11 +76,11 @@ class Movement:
 
     def moveLine(self, interval, dist):
         while (dist >= interval):
-            moveForward(interval)
-            wait()
-            self.MCL.updateParticles(interval, None)
+            self.moveForward(interval)
+            self.wait()
+            self.MCL.updateParticles(interval, 0.0)
             dist -= interval
         if(dist > 0):
-            moveForward(dist)
-            wait()
-            self.MCL.updateParticles(dist, None)
+            self.moveForward(dist)
+            self.wait()
+            self.MCL.updateParticles(dist, 0.0)

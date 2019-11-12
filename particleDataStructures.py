@@ -73,6 +73,7 @@ class Particles:
         pos2 = 210/420 + pos1
         pos3 = 1
         for i in range(self.n):
+            '''
             area = random.uniform(0, 1)
             if area < pos1:
                 x1 = 0
@@ -90,7 +91,8 @@ class Particles:
                 y1 = 0
                 y2 = 84
             self.data.append(Particle(random.uniform(x1, x2), random.uniform(y1, y2), random.uniform(0, 360)))
-
+            '''
+            self.data.append(Particle(84, 30, 90))
 
 
     def draw(self):

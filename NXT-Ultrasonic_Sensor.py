@@ -17,26 +17,27 @@ from __future__ import print_function # use python 3 syntax but make it compatib
 from __future__ import division       #                           ''
 
 import time     # import the time library for the sleep function
-import brickpi3 # import the BrickPi3 drivers
+import brickpi333 as brickpi3 # import the BrickPi3 drivers
 from os import system
 import MCL
 import movement
 import random
 import particleDataStructures
+from navigate import navigateToWaypoint
 
-BP = brickpi3.BrickPi3() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
+BP = brickpi3.BrickPi333() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
 
 # Configure for an NXT ultrasonic sensor.
 # BP.set_sensor_type configures the BrickPi3 for a specific sensor.
 # BP.PORT_1 specifies that the sensor will be on sensor port 1.
 # BP.SENSOR_TYPE.NXT_ULTRASONIC specifies that the sensor will be an NXT ultrasonic sensor.
-BP.set_sensor_type(BP.PORT_3, BP.SENSOR_TYPE.NXT_ULTRASONIC)
+BP.set_sensor_type(BP.PORT_4, BP.SENSOR_TYPE.NXT_ULTRASONIC)
 
 # MOTOR PORTS
 leftMotor = BP.PORT_B
 rightMotor = BP.PORT_C
 # SENSOR PORTS
-sonarSensor = BP.PORT_3
+sonarSensor = BP.PORT_4
  
 BP.set_motor_limits(leftMotor, 70, 200)
 BP.set_motor_limits(rightMotor, 70, 200)
@@ -51,6 +52,28 @@ N = 100 #Particle Num
 mcl = MCL.MCL()
 mov = movement.Movement(BP, mcl)
 
+def navigate():
+    coordinates = [(84, 30), (180, 30), (180, 54), (138, 54), (138, 168), (114, 168), (114, 84), (84, 84), (84, 30)]
+    for c in coordinates:
+        x = c[0]
+        y = c[1]
+        navigateToWaypoint(x, y, mcl, mov)
+        while not isinstance(reading, int):
+            try:
+                reading = BP.get_sensor(sonarSensor)
+            except brickpi3.SensorError as error:
+                pass
+        print(reading)
+        if reading != 255:
+            mcl.localisation(reading)
+            #TODO: Take the mean of the particles and the senesor reading. calculate the error and make adjustment, Notice that we should use the 2% erorr rate we got last time
+try:
+    navigate()
+except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
+    BP.reset_all() 
+    
+    # Unconfigure the sensors, disable the motors, and restore the LED to the control of the BrickPi3 firmware.
+'''
 try:
     i = 0
     for i in range(15):
@@ -65,8 +88,11 @@ try:
             try:
                 reading = BP.get_sensor(sonarSensor)
             except brickpi3.SensorError as error:
-                print(error)
-        mcl.localisation(reading)
+                #print(error)
+                pass
+        print(reading)
+        if reading != 255:
+            mcl.localisation(reading)
         mov.moveForward(10)
         mov.wait()
         reading = None
@@ -74,8 +100,11 @@ try:
             try:
                 reading = BP.get_sensor(sonarSensor)
             except brickpi3.SensorError as error:
-                print(error)
-        time.sleep(0.02)  # delay for 0.02 seconds (20ms) to reduce the Raspberry Pi CPU load.
+                #print(error)
+                pass
+        time.sleep(0.2)  # delay for 0.02 seconds (20ms) to reduce the Raspberry Pi CPU load.
 
 except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
-    BP.reset_all()        # Unconfigure the sensors, disable the motors, and restore the LED to the control of the BrickPi3 firmware.
+    BP.reset_all() 
+    '''
+    # Unconfigure the sensors, disable the motors, and restore the LED to the control of the BrickPi3 firmware.
