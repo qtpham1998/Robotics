@@ -173,4 +173,3 @@ class MCL:
             newSet.append(newParticle)
         self.particleSet = newSet
         
-
