@@ -56,11 +56,6 @@ class MCL:
             xCoord += p.x * p.w
             yCoord += p.y * p.w
             theta += p.theta * p.w    
-        if theta > 360 :
-            theta = 0;
-            for p in self.particleSet:
-                p.theta = p.theta - 360
-                theta += p.theta * p.w
         return xCoord, yCoord, theta     
 
 
@@ -80,7 +75,7 @@ class MCL:
         @param reading The sonar sensor reading
         '''
         for p in self.particleSet:
-            p.w = p.w * self.calculate_likelihood(p.x, p.y, p.theta, reading)
+            p.w *= self.calculate_likelihood(p.x, p.y, p.theta, reading)
 
     def calculate_likelihood(self, x, y, theta, z):
         '''
@@ -109,7 +104,6 @@ class MCL:
         @param theta The angle of the robot
         @return (m, w) tuple where m is the distance from the robot to the wall w
         '''
-        minDist = -1
         radians = self.toRads(theta)
         facingWalls = []
         for w in self.mymap.walls:
@@ -166,13 +160,17 @@ class MCL:
             wsum += p.w
             cumulativeW.append(wsum)
         newSet = []
-        for i in range(NUMBER_OF_PARTICLES):
+        for _ in range(NUMBER_OF_PARTICLES):
             rand = random.uniform(0, 1)
+            index = 0
             for i in range(NUMBER_OF_PARTICLES):
-                if(cumulativeW[i] > rand):
+                if(cumulativeW[i] < rand):
                     # i is the target particle
-                    newSet.append(copy.deepcopy(self.particleSet[i]))
+                    index = i
                     break
+            x, y, t, _ = self.particleSet[index].getCoords()
+            newParticle = particleDataStructures.Particle(x, y, t, 1 / NUMBER_OF_PARTICLES)
+            newSet.append(newParticle)
         self.particleSet = newSet
         
 

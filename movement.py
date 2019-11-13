@@ -54,7 +54,7 @@ class Movement:
             vLeft, vRight = self.getMotorDps()
         #print("Wait finished")
 
-    def moveForward(self, dist): #distance in cm
+    def moveForward(self, dist, update): #distance in cm
         '''
         Moves forward for a given distance
         @param dist The distance to move
@@ -62,7 +62,8 @@ class Movement:
         self.resetEncoder()
         targetDist = self.calculateTargetDistance(dist) 
         self.setMotorPosition(-targetDist, -targetDist)
-        self.MCL.updateParticles(dist, 0)
+        if update:
+            self.MCL.updateParticles(dist, 0)
 
 
     def rotateDegree(self, degrees):
@@ -71,7 +72,7 @@ class Movement:
         @param degrees The angle to rotate
         '''
         self.resetEncoder()
-        pos = self.calculateTargetDistance(degrees / 360 * 13.0 * pi)         
+        pos = self.calculateTargetDistance(degrees * 13 * pi / 360)         
         self.setMotorPosition(pos, -pos)
         self.MCL.updateParticles(0, degrees)
 
