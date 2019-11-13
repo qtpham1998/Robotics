@@ -14,8 +14,7 @@ def getIntervalCoordinates(X, Y, mcl, interval):
         xCoordinate += cos(newTheta) * interval
         yCoordinate += sin(newTheta) * interval
         coordinates.append((xCoordinate, yCoordinate))
-        diff -= interval
-        
+        diff -= interval       
     if diff > 0:
         coordinates.append((X,Y))
     
