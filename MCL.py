@@ -35,7 +35,6 @@ class MCL:
         for p in self.particleSet:
             draw.append(p.getCoords())
         particleDataStructures.canvas.drawParticles(draw)
-        
 
     def toRads(self, theta):
         '''
@@ -138,18 +137,15 @@ class MCL:
         '''
         interX = x + m * cos(self.toRads(theta))
         interY = y + m * sin(self.toRads(theta))
-        if (w[0] == w[2]):
+        if w[0] == w[2]:
             return w[1] <= interY <= w[3] or w[3] <= interY <= w[1]
         else:
             return w[0] <= interX <= w[2] or w[2] <= interX <= w[0]
 
-    #TODO: Calculate incident angle, if too big, don't update
-    #def incidentAngle():
-
     def normalisation(self):
-        '''
+        """
         Normalises the particle weight such that the sum is equal to 1
-        '''
+        """
         wsum = 0
         for p in self.particleSet:
             wsum += p.w
@@ -157,19 +153,19 @@ class MCL:
             p.w = p.w / wsum
 
     def resample(self):
-        '''
+        """
         Resamples the particle set
-        '''
+        """
         cumulativeW = []
         wsum = 0
         for p in self.particleSet:
             wsum += p.w
             cumulativeW.append(wsum)
         newSet = []
-        for i in range(NUMBER_OF_PARTICLES):
+        for _ in range(NUMBER_OF_PARTICLES):
             rand = random.uniform(0, 1)
             for i in range(NUMBER_OF_PARTICLES):
-                if(cumulativeW[i] > rand):
+                if cumulativeW[i] > rand:
                     # i is the target particle
                     newSet.append(copy.deepcopy(self.particleSet[i]))
                     break
