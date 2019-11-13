@@ -21,17 +21,21 @@ class MCL:
         self.resample()
         return self.particleSet
     
-    def localisation(self,reading):
+    def localisation(self, reading):
         '''
         Does the localisation then draws the updated particles
         @param reading The sonar sensor reading
         '''
         self.particleSet = self.MCL(reading)
+        self.drawCanvas()
+        time.sleep(0.2)
+        
+    def drawCanvas(self):
         draw = []
         for p in self.particleSet:
-            draw.append((p.x, p.y, p.theta, p.w))
+            draw.append(p.getCoords())
         particleDataStructures.canvas.drawParticles(draw)
-        time.sleep(0.2)
+        
 
     def toRads(self, theta):
         '''
@@ -68,6 +72,7 @@ class MCL:
         '''
         for i in range(NUMBER_OF_PARTICLES):
             self.particleSet[i] = self.particleSet[i].updateParticle(dist, degrees)
+        self.drawCanvas()
     
     def sensorUpdate(self, reading):
         '''
@@ -89,7 +94,7 @@ class MCL:
         m = self.getWall(x, y, theta)
         if m != None:
             sd = 2.5
-            res = exp((-(m[0] - z)**2) / (2 * sd**2)) + 0.1
+            res = exp(-((m[0] - z)**2) / (2 * sd**2)) + 0.1
             #print("likelihood: " + str(res))
             return res
         else:

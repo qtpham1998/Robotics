@@ -37,6 +37,11 @@ class Movement:
         @return Left motor velocity, Right motor velocity
         '''
         return self.BP.get_motor_status(self.leftMotor)[3], self.BP.get_motor_status(self.rightMotor)[3]
+    
+    def setMotorPosition(self, left, right):
+        self.BP.set_motor_position(self.rightMotor, left)
+        self.BP.set_motor_position(self.leftMotor, right)
+        self.wait()
 
     def wait(self):
         '''
@@ -56,9 +61,7 @@ class Movement:
         '''
         self.resetEncoder()
         targetDist = self.calculateTargetDistance(dist) 
-        self.BP.set_motor_position(self.leftMotor, -targetDist)
-        self.BP.set_motor_position(self.rightMotor, -targetDist)
-        self.wait()
+        self.setMotorPosition(-targetDist, -targetDist)
         self.MCL.updateParticles(dist, 0)
 
 
@@ -68,13 +71,11 @@ class Movement:
         @param degrees The angle to rotate
         '''
         self.resetEncoder()
-        pos = self.calculateTargetDistance(degrees / 360 * 13.0 * pi)
-        self.BP.set_motor_position(self.rightMotor, pos)
-        self.BP.set_motor_position(self.leftMotor, -pos)
-        self.wait()
+        pos = self.calculateTargetDistance(degrees / 360 * 13.0 * pi)         
+        self.setMotorPosition(pos, -pos)
         self.MCL.updateParticles(0, degrees)
 
-    def moveLine(self, interval, dist):
+    def moveLine(self, dist, interval):
         '''
         Moves 'dist' metres in intervals of 'interval'
         @param interval Distance to move at a time

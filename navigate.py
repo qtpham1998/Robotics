@@ -1,5 +1,11 @@
 import movement
+import brickpi333 as brickpi3 
 from math import pi, atan2, sqrt, atan, sin, cos
+
+BP = brickpi3.BrickPi333()
+BP.set_sensor_type(BP.PORT_4, BP.SENSOR_TYPE.NXT_ULTRASONIC)
+sonarSensor = BP.PORT_4
+SENSOR_OFFSET = 12.5
 
 def intervalCoordinates(X, Y, mcl, interval):
     
@@ -32,7 +38,8 @@ def navigateToWaypoint(xTarget, yTarget, mcl, mov):
     coordinates = intervalCoordinates(xTarget, yTarget, mcl, 20)
     
     print("-----------------------------------------------------")
-    for X, Y in coordinates:
+    previous_reading = 1000
+    for (X, Y) in coordinates:
         xCoordinate, yCoordinate, theta = mcl.getAverageCoordinate()
         print("The current (X,Y) coordinates are (%d, %d)" %(xCoordinate,yCoordinate))
         print("Moving to coordinates (%d, %d)" %(X, Y))
@@ -71,12 +78,22 @@ def navigateToWaypoint(xTarget, yTarget, mcl, mov):
             mov.rotateDegree(degToRot)
             
         distToMove = sqrt(xDiff * xDiff + yDiff * yDiff)
-        mov.moveForward(distToMove)
+        mov.moveLine(distToMove, 20)
+        
+        reading = 1000;
+        while reading > previous_reading:
+            try:
+                reading = BP.get_sensor(sonarSensor)
+                print("The sensor reading is %d" %reading)
+            except brickpi3.SensorError as error:
+                continue
+            
+        if reading != 255:
+            mcl.localisation(reading)
         
 def correction(z, mcl, mov):
     x, y, t = mcl.getAverageCoordinate()    
     (m, wall) = mcl.getWall(x, y, t)
-    z += 12.5 #Sonar distance from center
     if abs(m - z) > 5 and z < 250:
         mov.moveForward(z-m)
     

@@ -56,16 +56,18 @@ def navigate():
     coordinates = [(180, 30), (180, 54), (138, 54), (138, 168), (114, 168), (114, 84), (84, 84), (84, 30)]
     for x, y in coordinates:
         navigateToWaypoint(x, y, mcl, mov)
-        reading = BP.get_sensor(sonarSensor)
+        '''
+        reading = BP.get_sensor(sonarSensor) + SENSOR_OFFSET
+        print("The sensor reading is %d" %reading)
         correction(reading, mcl, mov)
         while not isinstance(reading, int):
             try:
-                reading = BP.get_sensor(sonarSensor)
+                reading = BP.get_sensor(sonarSensor) + SENSOR_OFFSET
             except brickpi3.SensorError as error:
                 pass
-        print("The sensor reading is %d" %reading)
         if reading != 255:
             mcl.localisation(reading)
+        '''    
             #TODO: Take the mean of the particles and the senesor reading. calculate the error and make adjustment, Notice that we should use the 2% erorr rate we got last time
             
 try:
