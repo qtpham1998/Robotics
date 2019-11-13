@@ -92,7 +92,7 @@ class Particles:
                 y2 = 84
             self.data.append(Particle(random.uniform(x1, x2), random.uniform(y1, y2), random.uniform(0, 360)))
             '''
-            self.data.append(Particle(84, 30, 90))
+            self.data.append(Particle(84, 30, 0))
 
 
     def draw(self):
@@ -108,12 +108,12 @@ class Particle:
 
     def calcX(self, dist):
         return self.x + (dist + random.gauss(0, 0.5)) * cos(self.theta / 180 * pi)
-
+ 
     def calcY(self, dist):
         return self.y + (dist + random.gauss(0, 0.5)) * sin(self.theta / 180 * pi)
 
     def calcTheta(self, degrees):
-        return self.theta - (degrees + random.gauss(0, 1.5)) 
+        return self.theta + (degrees + random.gauss(0, 0.1)) 
     
     def updateParticleCoords(self, dist):
         return updateParticle(self, dist, 0)
@@ -125,6 +125,8 @@ class Particle:
         x = self.x
         y = self.y
         theta = self.calcTheta(degrees)
+        #theta = theta + 360 if theta < 0 else theta
+        #theta = theta - 360 if theta > 360 else theta
         if(dist != None):
             x = self.calcX(dist)
             y = self.calcY(dist)
@@ -132,8 +134,7 @@ class Particle:
         
     def getCoords(self):
         return (self.x, self.y, self.theta, self.w)
-
-
+        
 canvas = Canvas();    # global canvas we are going to draw on
 
 mymap = Map()

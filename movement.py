@@ -42,19 +42,19 @@ class Movement:
         '''
         Waits for the robot to stop moving
         '''
-        print("Waiting for robot to stop.")
+        #print("Waiting for robot to stop.")
         time.sleep(1)
         vLeft, vRight = self.getMotorDps()
         while(vLeft != 0 or vRight != 0):
             vLeft, vRight = self.getMotorDps()
-        print("Wait finished")
+        #print("Wait finished")
 
     def moveForward(self, dist): #distance in cm
         '''
         Moves forward for a given distance
         @param dist The distance to move
         '''
-        print("Moving forward %d cm" %dist)
+        #print("Moving forward %.2f m" %dist)
         self.resetEncoder()
         targetDist = self.calculateTargetDistance(dist) 
         self.BP.set_motor_position(self.leftMotor, -targetDist)
@@ -80,12 +80,11 @@ class Movement:
         @param interval Distance to move at a time
         @param dist Total distance to move
         '''
+        print("Moving forward %d cm" %dist)
         while (dist >= interval):
             self.moveForward(interval)
             self.wait()
-            self.MCL.updateParticles(interval, 0.0)
             dist -= interval
         if(dist > 0):
             self.moveForward(dist)
             self.wait()
-            self.MCL.updateParticles(dist, 0.0)

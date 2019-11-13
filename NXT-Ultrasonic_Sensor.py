@@ -53,11 +53,11 @@ mcl = MCL.MCL()
 mov = movement.Movement(BP, mcl)
 
 def navigate():
-    coordinates = [(0.84, 0.30), (1.80, 0.30), (1.80, 0.54), (1.38, 0.54), (1.38, 1.68), (1.14, 1.68), (1.14, 0.84), (0.84, 0.84), (0.84, 0.30)]
+    coordinates = [(180, 30), (180, 54), (138, 54), (138, 168), (114, 168), (114, 84), (84, 84), (84, 30)]
     for c in coordinates:
         x = c[0]
         y = c[1]
-        navigateToWaypoint(x, y, mcl, mov)
+        navigateToWaypoint(x, y, mcl, mov, 20)
         reading = BP.get_sensor(sonarSensor)
         while not isinstance(reading, int):
             try:
@@ -68,6 +68,7 @@ def navigate():
         if reading != 255:
             mcl.localisation(reading)
             #TODO: Take the mean of the particles and the senesor reading. calculate the error and make adjustment, Notice that we should use the 2% erorr rate we got last time
+            
 try:
     navigate()
 except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.

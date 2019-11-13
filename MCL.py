@@ -12,12 +12,20 @@ class MCL:
         self.mymap = particleDataStructures.mymap
 
     def MCL(self, reading):
+        '''
+        Does the Monte Carlo localisation: updates particle weight from the sensor reading, normalises and resamples
+        @param reading The sonar sensor reading
+        '''
         self.sensorUpdate(reading)
         self.normalisation()
         self.resample()
         return self.particleSet
     
     def localisation(self,reading):
+        '''
+        Does the localisation then draws the updated particles
+        @param reading The sonar sensor reading
+        '''
         self.particleSet = self.MCL(reading)
         draw = []
         for p in self.particleSet:
@@ -34,21 +42,38 @@ class MCL:
         return theta * pi / 180
 
     def getAverageCoordinate(self):
+        '''
+        Calculates the average coordinates
+        '''
         xCoord = 0
         yCoord = 0
         theta = 0
         for p in self.particleSet:
             xCoord += p.x * p.w
             yCoord += p.y * p.w
-            theta += p.theta * p.w
+            theta += p.theta * p.w    
+        if theta > 360 :
+            theta = 0;
+            for p in self.particleSet:
+                p.theta = p.theta - 360
+                theta += p.theta * p.w
         return xCoord, yCoord, theta     
 
 
     def updateParticles(self, dist, degrees):
+        '''
+        Updates the particles' data after a movement
+        @param dist The distance traveled by the robot
+        @param degrees The degrees turned by the robot
+        '''
         for i in range(NUMBER_OF_PARTICLES):
             self.particleSet[i] = self.particleSet[i].updateParticle(dist, degrees)
     
     def sensorUpdate(self, reading):
+        '''
+        Updates the weight of the particles according to the sensor reading, using the likelihood function
+        @param reading The sonar sensor reading
+        '''
         for p in self.particleSet:
             p.w = p.w * self.calculate_likelihood(p.x, p.y, p.theta, reading)
 
@@ -64,7 +89,7 @@ class MCL:
         m = self.getWall(x, y, theta)
         if m != None:
             sd = 2.5
-            res = exp((-(z - m[0])**2) / (2 * sd**2)) + 0.1
+            res = exp((-(m[0] - z)**2) / (2 * sd**2)) + 0.1
             #print("likelihood: " + str(res))
             return res
         else:
@@ -91,10 +116,11 @@ class MCL:
             #print(m)
             if (m != 0 and self.intersect(x, y, theta, m, w)):
                 facingWalls.append((m, w))
-            #print(facingWalls)
+
             if (not facingWalls):
                 return None 
             else:
+                print("The walls that is faced is: " + str(facingWalls))
                 #print("looking at wall : " + str(min(facingWalls, key = lambda w: w[0])))
                 return min(facingWalls, key = lambda w: w[0])
     
@@ -110,13 +136,18 @@ class MCL:
         '''
         interX = x + m * cos(self.toRads(theta))
         interY = y + m * sin(self.toRads(theta))
-        #print(w[0] <= interX and interX <= w[2] and w[1] <= interY and interY <= w[3])
-        return w[0] <= interX and interX <= w[2] and w[1] <= interY and interY <= w[3]
+        if (w[0] == w[2]):
+            return w[1] <= interY <= w[3] or w[3] <= interY <= w[1]
+        else:
+            return w[0] <= interX <= w[2] or w[2] <= interX <= w[0]
 
     #TODO: Calculate incident angle, if too big, don't update
     #def incidentAngle():
 
     def normalisation(self):
+        '''
+        Normalises the particle weight such that the sum is equal to 1
+        '''
         wsum = 0
         for p in self.particleSet:
             wsum += p.w
@@ -124,6 +155,9 @@ class MCL:
             p.w = p.w / wsum
 
     def resample(self):
+        '''
+        Resamples the particle set
+        '''
         cumulativeW = []
         wsum = 0
         for p in self.particleSet:
