@@ -54,11 +54,11 @@ class Movement:
         Moves forward for a given distance
         @param dist The distance to move
         '''
-        #print("Moving forward %.2f m" %dist)
         self.resetEncoder()
         targetDist = self.calculateTargetDistance(dist) 
         self.BP.set_motor_position(self.leftMotor, -targetDist)
         self.BP.set_motor_position(self.rightMotor, -targetDist)
+        self.wait()
         self.MCL.updateParticles(dist, 0)
 
 
@@ -67,11 +67,11 @@ class Movement:
         Rotates left a certain number of degrees
         @param degrees The angle to rotate
         '''
-        print("Rotating %d degrees" %degrees)
         self.resetEncoder()
         pos = self.calculateTargetDistance(degrees / 360 * 13.0 * pi)
         self.BP.set_motor_position(self.rightMotor, pos)
         self.BP.set_motor_position(self.leftMotor, -pos)
+        self.wait()
         self.MCL.updateParticles(0, degrees)
 
     def moveLine(self, interval, dist):
@@ -83,8 +83,6 @@ class Movement:
         print("Moving forward %d cm" %dist)
         while (dist >= interval):
             self.moveForward(interval)
-            self.wait()
             dist -= interval
-        if(dist > 0):
+        if (dist > 0):
             self.moveForward(dist)
-            self.wait()

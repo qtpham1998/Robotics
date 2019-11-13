@@ -114,15 +114,12 @@ class MCL:
             if (den != 0):
                 m = num / den
             #print(m)
-            if (m != 0 and self.intersect(x, y, theta, m, w)):
+            if (m > 0 and self.intersect(x, y, theta, m, w)):
                 facingWalls.append((m, w))
-
-            if (not facingWalls):
-                return None 
-            else:
-                print("The walls that is faced is: " + str(facingWalls))
-                #print("looking at wall : " + str(min(facingWalls, key = lambda w: w[0])))
-                return min(facingWalls, key = lambda w: w[0])
+        if (not facingWalls):
+            return None 
+        else:
+            return min(facingWalls, key = lambda w: w[0])
     
     def intersect(self, x, y, theta, m, w):
         '''

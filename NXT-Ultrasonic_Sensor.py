@@ -23,7 +23,7 @@ import MCL
 import movement
 import random
 import particleDataStructures
-from navigate import navigateToWaypoint
+from navigate import navigateToWaypoint, correction
 
 BP = brickpi3.BrickPi333() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
 
@@ -54,17 +54,16 @@ mov = movement.Movement(BP, mcl)
 
 def navigate():
     coordinates = [(180, 30), (180, 54), (138, 54), (138, 168), (114, 168), (114, 84), (84, 84), (84, 30)]
-    for c in coordinates:
-        x = c[0]
-        y = c[1]
-        navigateToWaypoint(x, y, mcl, mov, 20)
+    for x, y in coordinates:
+        navigateToWaypoint(x, y, mcl, mov)
         reading = BP.get_sensor(sonarSensor)
+        correction(reading, mcl, mov)
         while not isinstance(reading, int):
             try:
                 reading = BP.get_sensor(sonarSensor)
             except brickpi3.SensorError as error:
                 pass
-        print(reading)
+        print("The sensor reading is %d" %reading)
         if reading != 255:
             mcl.localisation(reading)
             #TODO: Take the mean of the particles and the senesor reading. calculate the error and make adjustment, Notice that we should use the 2% erorr rate we got last time
