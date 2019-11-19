@@ -86,11 +86,11 @@ class SignatureContainer():
         
 # FILL IN: spin robot or sonar to capture a signature and store it in ls
 def characterize_location(ls):
-    print "TODO:    You should implement the function that captures a signature."
+    S.resetSensorOffset()
     for i in range(len(ls.sig)):
-        ls.sig
-        
-        mov.rotateDegree(10)
+        ls.sig[i] = S.getSensorReading()
+        S.rotateSonarSensor(1)
+    S.resetSonarSensorPos()
 
 # FILL IN: compare two signatures
 def compare_signatures(ls1, ls2):

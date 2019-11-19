@@ -20,8 +20,19 @@ class Sensors:
         self.BP.set_sensor_type(self.leftTouch, BP.SENSOR_TYPE.TOUCH)
         self.BP.set_sensor_type(self.rightTouch, BP.SENSOR_TYPE.TOUCH)
 	self.BP.set_motor_limits(self.sonarMotor, 70, 200)
-            
-    def getSensorReading():
+
+    def resetSensorOffsets(self):
+        """
+        Reset the sonar sensor motor encoder offset
+        @throws IOError
+        """
+        try:
+            self.BP.offset_motor_encoder(self.sonarMotor, self.BP.get_motor_encoder(self.sonarMotor))
+        except IOError as error:
+            print (error)
+
+
+    def getSensorReading(self):
         """
         Gets the current sensor reading
         """            
@@ -42,7 +53,7 @@ class Sensors:
 
     def resetSonarSensorPos(self):
         pos = BP.get_motor_encoder(sonarMotor)
-        while pos > 1:
+        while abs(pos) > 1:
             self.BP.set_motor_position(sonarMotor, 0)
             pos = self.BP.get_motor_encoder(sonarMotor)
  
