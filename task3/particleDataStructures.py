@@ -4,7 +4,7 @@
 
 import time
 import random
-import math
+from math import cos, sin, pi
 
 # Constants
 NUMBER_OF_PARTICLES = 100
@@ -23,8 +23,8 @@ def calcTheta():
     return random.randint(0,360)
 
 # A Canvas class for drawing a map and particles:
-# 	- it takes care of a proper scaling and coordinate transformation between
-#	  the map frame of reference (in cm) and the display (in pixels)
+#     - it takes care of a proper scaling and coordinate transformation between
+#      the map frame of reference (in cm) and the display (in pixels)
 class Canvas:
     def __init__(self,map_size=210):
         self.map_size    = map_size;    # in cm;
@@ -37,11 +37,11 @@ class Canvas:
         y1 = self.__screenY(line[1])
         x2 = self.__screenX(line[2])
         y2 = self.__screenY(line[3])
-        print "drawLine:" + str((x1,y1,x2,y2))
+        print ("drawLine:" + str((x1,y1,x2,y2)))
 
     def drawParticles(self,data):
         display = [(self.__screenX(d[0]),self.__screenY(d[1])) + d[2:] for d in data]
-        print "drawParticles:" + str(display)
+        print ("drawParticles:" + str(display))
 
     def __screenX(self,x):
         return (x + self.margin)*self.scale
@@ -69,10 +69,32 @@ class Particles:
     def __init__(self):
         self.n = NUMBER_OF_PARTICLES
         self.data = []
-    
-    def initialise():
-        self.data = [Particle(0,0,0) for i in range(self.n)]
-    
+        pos1 = 168/420
+        pos2 = 210/420 + pos1
+        pos3 = 1
+        for i in range(self.n):
+            '''
+            area = random.uniform(0, 1)
+            if area < pos1:
+                x1 = 0
+                x2 = 84
+                y1 = 0
+                y2 = 168
+            elif area < pos2:
+                x1 = 84
+                x2 = 168
+                y1 = 0
+                y2 = 210
+            else:
+                x1 = 168
+                x2 = 210
+                y1 = 0
+                y2 = 84
+            self.data.append(Particle(random.uniform(x1, x2), random.uniform(y1, y2), random.uniform(0, 360)))
+            '''
+            self.data.append(Particle(84, 30, 0))
+
+
     def draw(self):
         canvas.drawParticles(self.data)
 
@@ -86,12 +108,12 @@ class Particle:
 
     def calcX(self, dist):
         return self.x + (dist + random.gauss(0, 0.5)) * cos(self.theta / 180 * pi)
-
+ 
     def calcY(self, dist):
         return self.y + (dist + random.gauss(0, 0.5)) * sin(self.theta / 180 * pi)
 
     def calcTheta(self, degrees):
-        return self.theta - (degrees + random.gauss(0, 1.5)) 
+        return self.theta + (degrees + random.gauss(0, 0.1)) 
     
     def updateParticleCoords(self, dist):
         return updateParticle(self, dist, 0)
@@ -103,6 +125,8 @@ class Particle:
         x = self.x
         y = self.y
         theta = self.calcTheta(degrees)
+        #theta = theta + 360 if theta < 0 else theta
+        #theta = theta - 360 if theta > 360 else theta
         if(dist != None):
             x = self.calcX(dist)
             y = self.calcY(dist)
@@ -110,9 +134,8 @@ class Particle:
         
     def getCoords(self):
         return (self.x, self.y, self.theta, self.w)
-
-
-canvas = Canvas();	# global canvas we are going to draw on
+        
+canvas = Canvas();    # global canvas we are going to draw on
 
 mymap = Map()
 # Definitions of walls

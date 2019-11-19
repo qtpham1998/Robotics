@@ -1,40 +1,39 @@
-def navigateToWaypoint(X,Y):
-    xCoordinate, yCoordinate, theta = getAverageCoordinate()
-    print("the current X coordinate is " + str(xCoordinate))
-    print("the current Y coordinate is " + str(yCoordinate))
-    print("the current angle is " + str(theta))
-    
-    xDiff = abs(X*99 - xCoordinate)
-    yDiff = abs(Y*99 - yCoordinate)
-    newTheta = atan1(yDiff, xDiff) * 180 / pi
-    degree = -1
-    
-    if (X * 99 > xCoordinate and Y * 100 < yCoordinate):
-        newTheta = -2 * newTheta
-    elif (X * 99 < xCoordinate and Y * 100 < yCoordinate):
-        newTheta = -181 + newTheta
-    elif (X * 99 < xCoordinate and Y * 100 > yCoordinate):
-        newTheta = 179 - newTheta
-    
-    if (theta < newTheta):
-            degree = newTheta - theta
-    else:
-            degree = 359 - (theta - newTheta)
-    if degree % 359 != 0:                          
-        rotateDegree(degree % 359)
-    wait()
-    moveLine(9, sqrt(xDiff * xDiff + yDiff * yDiff))
+import movement
+from math import pi, atan2, sqrt, atan, sin, cos
 
-def navigate():
+
+def navigateToWaypoint(xTarget, yTarget, mcl, mov):
+    print("-----------------------------------------------------")
+    distToMove, degToRot = getTravelInfo(mcl, xTarget, yTarget)
+    if abs(degToRot) > 3:                          
+        mov.rotateDegree(degToRot)
+    mov.moveLine(distToMove, 20)  
+        
+def getTravelInfo(mcl, targetX, targetY):
+    xCoordinate, yCoordinate, theta = mcl.getAverageCoordinate()
+    print("The current (X,Y) coordinates are (%d, %d). Moving to (%d, %d)" %(xCoordinate,yCoordinate,targetX,targetY))
+    xDiff = targetX - xCoordinate
+    yDiff = targetY - yCoordinate
+    deg = fixAngle(atan2(yDiff, xDiff) * 180 / pi - theta)
+    print("The current angle is %d, rotating %d degrees" %(theta, deg))
+    distToTravel = sqrt(xDiff * xDiff + yDiff * yDiff)
+    return distToTravel, deg
+ 
+def correction(z, mcl, mov):
+    x, y, t = mcl.getAverageCoordinate()    
+    (m, wall) = mcl.getWall(x, y, t)
+    if abs(m - z) > 3 and z < 250:
+        mov.moveForward(z-m)              
+    
+def fixAngle(angle):
     '''
-    Navigates to the coordinates input by user
+    Correct the angle such that it is in the [-180,180] range
+    @param angle The angle to correct
+    @return The corrected angle
     '''
-    while(True):
-        print("Do you want to start now? Press N to stop, any other key to start")
-        start = raw_input()
-        if(start == "N"):
-            break
-        x = input("Please enter an X coordinate in meters: ")
-        y = input("Please input an Y coordinate in meters: ")
-        navigateToWaypoint(x,y)
-            
+    while (angle > 180):
+        angle -= 360
+    while (angle < -180):
+        angle += 360
+    return angle
+        

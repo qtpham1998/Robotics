@@ -44,8 +44,8 @@ BP.set_motor_limits(leftMotor, 70, 200)
 BP.set_motor_limits(rightMotor, 70, 200)
 
 # OFFSETS
-SENSOR_OFFSET = 10                      #cm
-N = 100                                 #Particle Num
+SENSOR_OFFSET = 10 #cm
+N = 100 #Particle Num
 mcl = MCL.MCL()
 mov = movement.Movement(BP, mcl)
 
@@ -63,6 +63,9 @@ def getSensorReading():
         except brickpi3.SensorError as error:
             pass
     return reading + SENSOR_OFFSET
+import movement
+from math import pi, atan2, sqrt, atan, sin, cos
+
 
 def intervalCoordinates(xTarget, yTarget, mcl, interval):
     xCoord, yCoord, _ = mcl.getAverageCoordinate()
@@ -110,6 +113,38 @@ def navigateToWaypoint(xTarget, yTarget, mcl, mov):
         reading = getSensorReading()
         if reading < 255:
             mcl.localisation(reading)   
+        '''
+        xCoord, yCoord, theta = mcl.getAverageCoordinate()
+        print("Localisation before correction: %d, %d, %d" %(xCoord, yCoord, theta))
+        correction(reading, mcl, mov)
+        reading = getSensorReading()
+        if reading < 255:
+            mcl.localisation(reading)
+            xCoord, yCoord, theta = mcl.getAverageCoordinate()
+            print("Localisation after correction: %d, %d, %d" %(xCoord, yCoord, theta))
+            '''
+    
+
+    '''
+def navigateToWaypoint(xTarget, yTarget, mcl, mov):
+    print("-----------------------------------------------------")
+    distToMove, degToRot = getTravelInfo(mcl, xTarget, yTarget)
+    if abs(degToRot) > 3:                          
+        mov.rotateDegree(degToRot)
+    mov.moveLine(distToMove, 20)
+    reading = getSensorReading()
+    if reading < 255: 
+        mcl.localisation(reading)
+        xCoord, yCoord, theta = mcl.getAverageCoordinate()
+        print("Localisation before correction: %d, %d, %d" %(xCoord, yCoord, theta))
+        correction(reading, mcl, mov)
+        reading = getSensorReading()
+        if reading < 255:
+            mcl.localisation(reading)
+            xCoord, yCoord, theta = mcl.getAverageCoordinate()
+            print("Localisation after correction: %d, %d, %d" %(xCoord, yCoord, theta))
+            #TODO: Take the mean of the particles and the senesor reading. calculate the error and make adjustment, Notice that we should use the 2% erorr rate we got last time
+            '''
         
 def getTravelInfo(mcl, targetX, targetY):
     xCoordinate, yCoordinate, theta = mcl.getAverageCoordinate()
