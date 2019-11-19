@@ -9,6 +9,7 @@ class Movement:
         self.leftMotor = bp.PORT_B
         self.rightMotor = bp.PORT_C
         self.sonarSensor = bp.PORT_3
+        self.sonarMotor = bp.PORT_A
         self.MCL = mcl
     
     def calculateTargetDistance(self, dist):
@@ -64,6 +65,13 @@ class Movement:
         self.setMotorPosition(-targetDist, -targetDist)
         if update:
             self.MCL.updateParticles(dist, 0)
+
+    def rotateSensorToDegree(self, degree):
+        '''
+        The initial angel facing front is not 0 so we add 90 to correct
+        '''
+        self.BP.set_motor_position(self.sonarMotor, degree)
+        self.wait()
 
 
     def rotateDegree(self, degrees):

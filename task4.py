@@ -24,7 +24,7 @@ import movement
 import random
 import particleDataStructures
 from math import pi, atan2, sqrt, atan, sin, cos
-
+import sys
 
 BP = brickpi3.BrickPi333() # Create an instance of the BrickPi3 class. BP will be the BrickPi3 object.
 
@@ -37,9 +37,11 @@ BP.set_sensor_type(BP.PORT_4, BP.SENSOR_TYPE.NXT_ULTRASONIC)
 # MOTOR PORTS
 leftMotor = BP.PORT_B
 rightMotor = BP.PORT_C
+sonarMotor = BP.PORT_A
 # SENSOR PORTS
 sonarSensor = BP.PORT_4
  
+BP.set_motor_limits(sonarMotor, 70, 200)
 BP.set_motor_limits(leftMotor, 70, 200)
 BP.set_motor_limits(rightMotor, 70, 200)
 
@@ -50,10 +52,14 @@ mcl = MCL.MCL()
 mov = movement.Movement(BP, mcl)
 
 def navigate():
+    #coordinates = [(180, 30), (180, 54), (138, 54), (138, 168), (114, 168), (114, 84), (84, 84), (84, 30)]
     coordinates = [(180, 30), (180, 54), (138, 54), (138, 168), (114, 168), (114, 84), (84, 84), (84, 30)]
     for x, y in coordinates:
         navigateToWaypoint(x, y, mcl, mov)
-            
+        rotateAndScan()
+
+def rotateAndScan():
+    pass
 def getSensorReading():
     reading = 255
     while True:
@@ -63,9 +69,6 @@ def getSensorReading():
         except brickpi3.SensorError as error:
             pass
     return reading + SENSOR_OFFSET
-import movement
-from math import pi, atan2, sqrt, atan, sin, cos
-
 
 def intervalCoordinates(xTarget, yTarget, mcl, interval):
     xCoord, yCoord, _ = mcl.getAverageCoordinate()
@@ -175,7 +178,7 @@ def fixAngle(angle):
     return angle
 
 try:
-    navigate()
+    mov.rotateSensorToDegree(int(sys.argv[1]))
 except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
     BP.reset_all() 
     
