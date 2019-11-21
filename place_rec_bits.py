@@ -6,20 +6,21 @@ from __future__ import print_function # use python 3 syntax but make it compatib
 
 import random
 import os
-import sensors
+import sys
+from sensors import Sensors
 import brickpi333 as brickpi3
-
+from collections import Counter
 BP = brickpi3.BrickPi333()
 S = Sensors(BP)
 
 # Location signature class: stores a signature characterizing one location
 class LocationSignature:
-    def __init__(self, no_bins = 360):
+    def __init__(self, no_bins = 36):
         self.sig = [0] * no_bins
         
     def print_signature(self):
         for i in range(len(self.sig)):
-            print self.sig[i]
+            print(self.sig[i])
 
 # --------------------- File management class ---------------
 class SignatureContainer():
@@ -48,7 +49,7 @@ class SignatureContainer():
  
     # Delete all loc_%%.dat files
     def delete_loc_files(self):
-        print "STATUS:  All signature files removed."
+        print("STATUS:  All signature files removed.")
         for n in range(self.size):
             if os.path.isfile(self.filenames[n]):
                 os.remove(self.filenames[n])
@@ -80,13 +81,12 @@ class SignatureContainer():
                     ls.sig[i] = int(s)
             f.close();
         else:
-            print "WARNING: Signature does not exist."
+            print("WARNING: Signature does not exist.")
         
         return ls
         
 # FILL IN: spin robot or sonar to capture a signature and store it in ls
 def characterize_location(ls):
-    S.resetSensorOffset()
     for i in range(len(ls.sig)):
         ls.sig[i] = S.getSensorReading()
         S.rotateSonarSensor(1)
@@ -95,9 +95,25 @@ def characterize_location(ls):
 # Compare two given signatures
 def compare_signatures(ls1, ls2):
     dist = 0
-    for i in range(len(ls1)):
-        dist += (ls1.sig[i] - ls2.sig[i])**2
+    dCount1 = Counter(ls1.sig)
+    dCount2 = Counter(ls2.sig)
+
+    for i in dCount1.elements():
+        dist += (dCount1[i] - dCount2[i])**2
     return dist
+
+def findShift(ls1, ls2):
+    optShift = -1
+    bestDist = sys.maxsize
+    sigSize = len(ls1.sig)
+    for i in range(sigSize):
+        dist = 0
+        for j in range(sigSize):
+            dist += (ls1.sig[j] - ls2.sig[(j+i)%len(ls1.sig)])**2
+        if dist < bestDist :
+            bestDist = dist
+            optShift = i
+    return optShift * 360 / sigSize       
 
 # This function characterizes the current location, and stores the obtained 
 # signature into the next available file.
@@ -106,13 +122,13 @@ def learn_location():
     characterize_location(ls)
     idx = signatures.get_free_index();
     if (idx == -1): # run out of signature files
-        print "\nWARNING:"
-        print "No signature file is available. NOTHING NEW will be learned and stored."
-        print "Please remove some loc_%%.dat files.\n"
+        print("\nWARNING:")
+        print("No signature file is available. NOTHING NEW will be learned and stored.")
+        print("Please remove some loc_%%.dat files.\n")
         return
     
     signatures.save(ls,idx)
-    print "STATUS:  Location " + str(idx) + " learned and saved."
+    print("STATUS:  Location " + str(idx) + " learned and saved.")
 
 # This function tries to recognize the current location.
 # 1.   Characterize current location
@@ -127,10 +143,25 @@ def recognize_location():
     characterize_location(ls_obs);
 
     # FILL IN: COMPARE ls_read with ls_obs and find the best match
+    best_ls = None
+    opt_idx = -1
+    optDist = sys.maxsize
+    threshold = 9000
     for idx in range(signatures.size):
-        print "STATUS:  Comparing signature " + str(idx) + " with the observed signature."
+        print("STATUS:  Comparing signature " + str(idx) + " with the observed signature.")
         ls_read = signatures.read(idx);
         dist    = compare_signatures(ls_obs, ls_read)
+        if dist < threshold and dist < optDist:
+            best_ls = ls_read
+            opt_idx = idx
+            optDist = dist
+            
+    if best_ls == None:
+        print("No matching signatures found. Unknown location.")
+    else:
+        lsShift = findShift(ls_obs, best_ls)
+        print("The location is detected to be %d, the robot is rotated %d degrees" %(opt_idx, lsShift))
+
 # Prior to starting learning the locations, it should delete files from previous
 # learning either manually or by calling signatures.delete_loc_files(). 
 # Then, either learn a location, until all the locations are learned, or try to
@@ -140,6 +171,6 @@ signatures = SignatureContainer(5);
 signatures.delete_loc_files()
 
 learn_location();
-recognize_location();
+#recognize_location();
 
 
