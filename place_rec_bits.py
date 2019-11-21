@@ -91,11 +91,12 @@ def characterize_location(ls):
         ls.sig[i] = S.getSensorReading()
         S.rotateSonarSensor(1)
     S.resetSonarSensorPos()
-
-# FILL IN: compare two signatures
+    
+# Compare two given signatures
 def compare_signatures(ls1, ls2):
     dist = 0
-    print "TODO:    You should implement the function that compares two signatures."
+    for i in range(len(ls1)):
+        dist += (ls1.sig[i] - ls2.sig[i])**2
     return dist
 
 # This function characterizes the current location, and stores the obtained 
@@ -130,7 +131,6 @@ def recognize_location():
         print "STATUS:  Comparing signature " + str(idx) + " with the observed signature."
         ls_read = signatures.read(idx);
         dist    = compare_signatures(ls_obs, ls_read)
-
 # Prior to starting learning the locations, it should delete files from previous
 # learning either manually or by calling signatures.delete_loc_files(). 
 # Then, either learn a location, until all the locations are learned, or try to
