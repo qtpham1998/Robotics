@@ -8,7 +8,6 @@ class Movement:
         self.BP = bp
         self.leftMotor = bp.PORT_B
         self.rightMotor = bp.PORT_C
-        self.sonarSensor = bp.PORT_3
         self.MCL = mcl
     
     def calculateTargetDistance(self, dist):

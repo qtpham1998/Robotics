@@ -73,25 +73,6 @@ class Particles:
         pos2 = 210/420 + pos1
         pos3 = 1
         for i in range(self.n):
-            '''
-            area = random.uniform(0, 1)
-            if area < pos1:
-                x1 = 0
-                x2 = 84
-                y1 = 0
-                y2 = 168
-            elif area < pos2:
-                x1 = 84
-                x2 = 168
-                y1 = 0
-                y2 = 210
-            else:
-                x1 = 168
-                x2 = 210
-                y1 = 0
-                y2 = 84
-            self.data.append(Particle(random.uniform(x1, x2), random.uniform(y1, y2), random.uniform(0, 360)))
-            '''
             self.data.append(Particle(84, 30, 0))
 
 
@@ -158,10 +139,3 @@ mymap.add_wall((210,0,0,0));        # h
 mymap.draw()
 
 particleSet = Particles()
-
-t = 12.5
-#while True:
-#    particles.update();
-#    particles.draw();
-#    t += 0.05;
-#    time.sleep(0.05);
