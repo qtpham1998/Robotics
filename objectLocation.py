@@ -20,29 +20,19 @@ import movement
 from sensors import Sensors
 import statistics
 import brickpi333 as brickpi3
-BP = brickpi3.BrickPi333()
-S = Sensors(BP)
 import time
-# MOTOR PORTS
-leftMotor = BP.PORT_B
-rightMotor = BP.PORT_C
-# SENSOR PORTS
 
-BP.set_motor_limits(leftMotor, 70, 200)
-BP.set_motor_limits(rightMotor, 70, 200)
-
-# OFFSETS
-SENSOR_OFFSET = 10  # cm
-N = 100  # Particle Num
 ORIGIN_X = 84
 ORIGIN_Y = 30
+BP = brickpi3.BrickPi333()
+S = Sensors(BP)
 mcl = MCL.MCL()
 mov = movement.Movement(BP, mcl, S)
 
 from math import pi, atan2, sqrt, atan, sin, cos
 
 def navigate():
-    coordinates = [(120, 30,90)]
+    coordinates = [(120, 30,90),(120,30,90)]
     for x, y, start in coordinates:
         #navigateToWaypoint(x, y, mcl, mov)
         findBottle3()
@@ -113,33 +103,32 @@ def findBottle2(start):
 
 def findBottle3():
     detected = False
+    abnormalList = []
     while not detected:
+        print("============================")
         x, y, theta = mcl.getAverageCoordinate()
         S.rotateSonarSensor(90)
-        #S.setSensorDPS(-40)
-        degreeDetected = 0
         degree = 90
-        while degree >= -90:
-            diff = -1
+        S.setSensorDPS(-50)
+        while degree > -90:
             reading, degree = S.getSensorDegreeReading()
-            (m, wall) = mcl.getWall(x, y, degree)
-            if reading < 265 and m - reading > 20:
+            (m, wall) = mcl.getWall(x, y, degree + theta)
+            if reading < 100 and m - reading > 20:
                 degreeDetected = degree
                 print("Detecting abnormal distance: expecting %d, sensing object at %d" %(m, reading))
+                print("Facing the wall %s" %str(wall))
+                abnormalList.append(degree)
                 detected = True
-                break
-            degree -= 20
-            S.rotateSonarSensor(degree)
             time.sleep(0.05)
+            degree = S.getCurrentDegree()
         S.setSensorDPS(0)
         S.resetSonarSensorPos()
         if not detected:
             mov.moveForward(40, True)
-
-    if detected:
-        print("Turning towards object (hopefully) at angle %d, moving distance %d" %(degreeDetected, reading))
-        mov.rotateDegree(fixAngle(degreeDetected))
-        moveToBottle(reading)
+    degreeDetected = statistics.mean(abnormalList)
+    print("Turning towards object (hopefully) at angle %d, moving distance %d" %(degreeDetected, reading))
+    mov.rotateDegree(fixAngle(degreeDetected))
+    moveToBottle(reading, degreeDetected)
         
     """
     x, y, theta = mcl.getAverageCoordinate()
@@ -174,9 +163,12 @@ def findBottle3():
         mov.moveForward(40, True)
     """
 
-def moveToBottle(reading):
-    mov.moveForward(reading, True)
-    #mov.setMotorDPS(-200,reading - 30)    
+def moveToBottle(reading, degreeRotated):
+    #mov.moveForward(reading, True)
+    mov.setMotorDPS(-200, reading - 30)
+    mov.moveForward(-20, True)
+    mov.rotateDegree(90 - degreeRotated)
+    mov.moveForward(40, True)
 
 def fixAngle(angle):
     '''

@@ -10,7 +10,12 @@ class Movement:
         self.rightMotor = bp.PORT_C
         self.MCL = mcl
         self.sensor = sensor
-    
+        self.initialise()
+
+    def initialise(self):
+        self.BP.set_motor_limits(self.leftMotor, 70, 200)
+        self.BP.set_motor_limits(self.rightMotor, 70, 200)
+
     def calculateTargetDistance(self, dist):
         '''
         Calculates the motor position needed to travel given distance
