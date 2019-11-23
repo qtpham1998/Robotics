@@ -18,10 +18,11 @@ import sys
 import MCL
 import movement
 from sensors import Sensors
+import statistics
 import brickpi333 as brickpi3
 BP = brickpi3.BrickPi333()
 S = Sensors(BP)
-
+import time
 # MOTOR PORTS
 leftMotor = BP.PORT_B
 rightMotor = BP.PORT_C
@@ -44,10 +45,8 @@ def navigate():
     coordinates = [(120, 30,90)]
     for x, y, start in coordinates:
         #navigateToWaypoint(x, y, mcl, mov)
-        findBottle(start)
-        mov.wait()
-        moveToBottle()
-        mov.moveForward(-20, True)
+        findBottle3()
+    #navigateToWaypoint(84, 30, mcl, mov)
 
 
 def findBottle(start):
@@ -64,7 +63,7 @@ def findBottle(start):
         degree = 0
         while (degree >= start - 180):
             reading = S.getSensorReading()
-            degree = S.getCurrentDegree()
+            degree = S.getCurrentDegree() + 2
             (m, wall) = mcl.getWall(x, y, degree)
             if reading != 255 and (abs(reading - m)) > 25 and reading < m:
                 diff = abs(reading - m)
@@ -78,12 +77,106 @@ def findBottle(start):
             break
         mov.moveForward(40, True)
     mov.rotateDegree(fixAngle(theta - max_degree))
+    
+    
+def findBottle2(start):
+    x, y, theta = mcl.getAverageCoordinate()
+    rots = 10
+    diff = list(range(19))
+    max_degree = 0
+    max_diff = -1
+    while True:
+        average_loc = 0
+        S.rotateSonarSensor(90)
+        S.setSensorDPS(-100)
+        nextAngle = start
+        diff = -1
+        degree = 0
+        for i in range(0,19):
+            S.rotateSonarSensor(nextAngle)
+            reading = S.getSensorReading()
+            degree = start - i * 10
+            (m, wall) = mcl.getWall(x, y, degree)
+            if reading != 255 and (abs(reading - m)) > 25 and reading < m:
+                diff = abs(reading - m)
+            if diff > max_diff:
+                max_degree = degree
+                max_diff = diff
+            nextAngle -= 10    
+        S.setSensorDPS(0)    
+        S.resetSonarSensorPos() 
+        print("The max index is "+ str(max_degree))
+        if max_diff != -1:
+            break
+        mov.moveForward(40, True)
+    mov.rotateDegree(fixAngle(theta - max_degree))    
 
+def findBottle3():
+    detected = False
+    while not detected:
+        x, y, theta = mcl.getAverageCoordinate()
+        S.rotateSonarSensor(90)
+        #S.setSensorDPS(-40)
+        degreeDetected = 0
+        degree = 90
+        while degree >= -90:
+            diff = -1
+            reading, degree = S.getSensorDegreeReading()
+            (m, wall) = mcl.getWall(x, y, degree)
+            if reading < 265 and m - reading > 20:
+                degreeDetected = degree
+                print("Detecting abnormal distance: expecting %d, sensing object at %d" %(m, reading))
+                detected = True
+                break
+            degree -= 20
+            S.rotateSonarSensor(degree)
+            time.sleep(0.05)
+        S.setSensorDPS(0)
+        S.resetSonarSensorPos()
+        if not detected:
+            mov.moveForward(40, True)
 
-def moveToBottle():
-    reading = S.getSensorReading()
-    mov.moveForward(reading - 30, True)
-    #mov.setMotorDPS(-200,reading)    
+    if detected:
+        print("Turning towards object (hopefully) at angle %d, moving distance %d" %(degreeDetected, reading))
+        mov.rotateDegree(fixAngle(degreeDetected))
+        moveToBottle(reading)
+        
+    """
+    x, y, theta = mcl.getAverageCoordinate()
+    rots = 10
+    diff = list...
+    max_degree = 0
+    max_diff = -1
+    li = []
+    while True:
+        nextAngle = start
+        diff = -1
+        degree = 0
+        for i in range(0,19):
+            S.rotateSonarSensor(nextAngle)
+            reading = S.getSensorReading()
+            degree = start - i * 10
+            (m, wall) = mcl.getWall(x, y, degree)
+            if reading != 255 and (abs(reading - m)) > 25 and reading < m:
+                diff = abs(reading - m)
+            if diff > max_diff:
+                max_degree = degree
+                max_diff = diff
+            if diff >= 20:
+                li.append(degree)
+                print("seeing " + str(degree))
+            nextAngle -= 10    
+        S.setSensorDPS(0)    
+        S.resetSonarSensorPos() 
+        print("The max index is "+ str(max_degree))
+        if li:
+            break
+        mov.moveForward(40, True)
+    """
+
+def moveToBottle(reading):
+    mov.moveForward(reading, True)
+    #mov.setMotorDPS(-200,reading - 30)    
 
 def fixAngle(angle):
     '''

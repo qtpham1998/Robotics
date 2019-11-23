@@ -25,7 +25,6 @@ class Sensors:
         self.resetSensorOffset()
     
     def setSensorDPS(self,dps):
-        print("setting motor dps to be ", dps)
         self.BP.set_motor_dps(self.sonarMotor,dps)
 
     def resetSensorOffset(self):
@@ -56,11 +55,13 @@ class Sensors:
                 pass
         return reading + self.SENSOR_OFFSET
 
+    def getSensorDegreeReading(self):
+        return self.getSensorReading(), self.getCurrentDegree()
+
     def rotateSonarSensor(self, degrees):
         """
         Rotates the motor with the sonar sensor
         """
-        print("rotating %d degrees", degrees)
         self.BP.set_motor_position(self.sonarMotor, degrees)
         self.waitSonar()
         
@@ -68,7 +69,7 @@ class Sensors:
         return self.BP.get_motor_encoder(self.sonarMotor)
 
     def resetSonarSensorPos(self):
-        self.BP.set_motor_position(self.sonarMotor, 2)
+        self.BP.set_motor_position(self.sonarMotor, 0)
         self.waitSonar()
             
     def waitSonar(self):

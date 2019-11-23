@@ -67,7 +67,7 @@ class MCL:
         '''
         for i in range(NUMBER_OF_PARTICLES):
             self.particleSet[i] = self.particleSet[i].updateParticle(dist, degrees)
-        self.drawCanvas()
+        #self.drawCanvas()
     
     def sensorUpdate(self, reading):
         '''

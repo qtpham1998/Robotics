@@ -82,7 +82,7 @@ class Movement:
         '''
         self.resetEncoder()
         pos = self.calculateTargetDistance(degrees * 13 * pi / 360)         
-        self.setMotorPosition(pos, -pos)
+        self.setMotorPosition(-pos, pos)
         self.MCL.updateParticles(0, degrees)
 
     def moveLine(self, dist, interval):
