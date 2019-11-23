@@ -4,11 +4,12 @@ import MCL
 
 class Movement:
 
-    def __init__(self, bp, mcl):
+    def __init__(self, bp, mcl, sensor):
         self.BP = bp
         self.leftMotor = bp.PORT_B
         self.rightMotor = bp.PORT_C
         self.MCL = mcl
+        self.sensor = sensor
     
     def calculateTargetDistance(self, dist):
         '''
@@ -42,12 +43,22 @@ class Movement:
         self.BP.set_motor_position(self.leftMotor, right)
         self.wait()
 
+    def setMotorDPS(self, dps, dist):
+        self.BP.set_motor_dps(self.rightMotor, dps)
+        self.BP.set_motor_dps(self.leftMotor, dps)
+        leftReading, rightReading = self.sensor.getTouchSensorReading()
+        while(leftReading != 1 and rightReading != 1):
+            leftReading, rightReading = self.sensor.getTouchSensorReading()
+        self.BP.set_motor_dps(self.rightMotor, 0)
+        self.BP.set_motor_dps(self.leftMotor, 0)
+        self.MCL.updateParticles(dist,0)
+
     def wait(self):
         '''
         Waits for the robot to stop moving
         '''
         #print("Waiting for robot to stop.")
-        time.sleep(1)
+        time.sleep(0.5)
         vLeft, vRight = self.getMotorDps()
         while(vLeft != 0 or vRight != 0):
             vLeft, vRight = self.getMotorDps()
@@ -63,7 +74,6 @@ class Movement:
         self.setMotorPosition(-targetDist, -targetDist)
         if update:
             self.MCL.updateParticles(dist, 0)
-
 
     def rotateDegree(self, degrees):
         '''
@@ -87,3 +97,4 @@ class Movement:
             dist -= interval
         if (dist > 0):
             self.moveForward(dist)
+            

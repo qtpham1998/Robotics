@@ -23,6 +23,10 @@ class Sensors:
         self.BP.set_sensor_type(self.rightTouch, self.BP.SENSOR_TYPE.TOUCH)
         self.BP.set_motor_limits(self.sonarMotor, 70, 200)
         self.resetSensorOffset()
+    
+    def setSensorDPS(self,dps):
+        print("setting motor dps to be ", dps)
+        self.BP.set_motor_dps(self.sonarMotor,dps)
 
     def resetSensorOffset(self):
         """
@@ -33,6 +37,10 @@ class Sensors:
             self.BP.offset_motor_encoder(self.sonarMotor, self.BP.get_motor_encoder(self.sonarMotor))
         except IOError as error:
             print (error)
+
+    
+    def getTouchSensorReading(self):
+        return self.BP.get_sensor(self.leftTouch), self.BP.get_sensor(self.rightTouch)
 
 
     def getSensorReading(self):
@@ -52,18 +60,22 @@ class Sensors:
         """
         Rotates the motor with the sonar sensor
         """
+        print("rotating %d degrees", degrees)
         self.BP.set_motor_position(self.sonarMotor, degrees)
         self.waitSonar()
+        
+    def getCurrentDegree(self):
+        return self.BP.get_motor_encoder(self.sonarMotor)
 
     def resetSonarSensorPos(self):
-        self.BP.set_motor_position(self.sonarMotor, 0)
+        self.BP.set_motor_position(self.sonarMotor, 2)
         self.waitSonar()
             
     def waitSonar(self):
         '''
         Waits for the sensor to stop moving
         '''
-        time.sleep(0.2)
+        time.sleep(0.05)
         vMotor = self.BP.get_motor_status(self.sonarMotor)[3]
         while(vMotor != 0):
             vMotor = self.BP.get_motor_status(self.sonarMotor)[3]

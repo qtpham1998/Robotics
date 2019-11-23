@@ -172,12 +172,12 @@ def recognize_location(signatures):
 # recognize one of them, if locations have already been learned.
 
 signatures = SignatureContainer(5);
-"""
+
 signatures.delete_loc_files()
 for i in range(signatures.size):
     learn_location(signatures);
     input("Press enter to take signature of the next location:")
-"""
+
 recognize_location(signatures);
 
 
