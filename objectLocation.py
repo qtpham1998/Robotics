@@ -32,76 +32,14 @@ mov = movement.Movement(BP, mcl, S)
 from math import pi, atan2, sqrt, atan, sin, cos
 
 def navigate():
-    coordinates = [(120, 30,90),(120,30,90)]
-    for x, y, start in coordinates:
-        #navigateToWaypoint(x, y, mcl, mov)
-        findBottle3()
+    coordinates = [(90, 70, 70),(90, 70, 135),(84,30,0)]
+    for x, y, theta in coordinates:
+        findBottle()
+        navigateToWaypoint(x, y, mcl, mov)
+        fixOrientation(theta, mcl, mov)
     #navigateToWaypoint(84, 30, mcl, mov)
 
-
 def findBottle(start):
-    x, y, theta = mcl.getAverageCoordinate()
-    rots = 10
-    diff = list(range(19))
-    max_degree = 0
-    max_diff = -1
-    while True:
-        average_loc = 0
-        S.rotateSonarSensor(100)
-        S.setSensorDPS(-100)
-        diff = -1
-        degree = 0
-        while (degree >= start - 180):
-            reading = S.getSensorReading()
-            degree = S.getCurrentDegree() + 2
-            (m, wall) = mcl.getWall(x, y, degree)
-            if reading != 255 and (abs(reading - m)) > 25 and reading < m:
-                diff = abs(reading - m)
-            if diff > max_diff:
-                max_degree = degree
-                max_diff = diff
-        S.setSensorDPS(0)    
-        S.resetSonarSensorPos() 
-        print("The max index is "+ str(max_degree))
-        if max_diff != -1:
-            break
-        mov.moveForward(40, True)
-    mov.rotateDegree(fixAngle(theta - max_degree))
-    
-    
-def findBottle2(start):
-    x, y, theta = mcl.getAverageCoordinate()
-    rots = 10
-    diff = list(range(19))
-    max_degree = 0
-    max_diff = -1
-    while True:
-        average_loc = 0
-        S.rotateSonarSensor(90)
-        S.setSensorDPS(-100)
-        nextAngle = start
-        diff = -1
-        degree = 0
-        for i in range(0,19):
-            S.rotateSonarSensor(nextAngle)
-            reading = S.getSensorReading()
-            degree = start - i * 10
-            (m, wall) = mcl.getWall(x, y, degree)
-            if reading != 255 and (abs(reading - m)) > 25 and reading < m:
-                diff = abs(reading - m)
-            if diff > max_diff:
-                max_degree = degree
-                max_diff = diff
-            nextAngle -= 10    
-        S.setSensorDPS(0)    
-        S.resetSonarSensorPos() 
-        print("The max index is "+ str(max_degree))
-        if max_diff != -1:
-            break
-        mov.moveForward(40, True)
-    mov.rotateDegree(fixAngle(theta - max_degree))    
-
-def findBottle3():
     detected = False
     abnormalList = []
     while not detected:
@@ -130,45 +68,9 @@ def findBottle3():
     mov.rotateDegree(fixAngle(degreeDetected))
     moveToBottle(reading, degreeDetected)
         
-    """
-    x, y, theta = mcl.getAverageCoordinate()
-    rots = 10
-    diff = list...
-    max_degree = 0
-    max_diff = -1
-    li = []
-    while True:
-        nextAngle = start
-        diff = -1
-        degree = 0
-        for i in range(0,19):
-            S.rotateSonarSensor(nextAngle)
-            reading = S.getSensorReading()
-            degree = start - i * 10
-            (m, wall) = mcl.getWall(x, y, degree)
-            if reading != 255 and (abs(reading - m)) > 25 and reading < m:
-                diff = abs(reading - m)
-            if diff > max_diff:
-                max_degree = degree
-                max_diff = diff
-            if diff >= 20:
-                li.append(degree)
-                print("seeing " + str(degree))
-            nextAngle -= 10    
-        S.setSensorDPS(0)    
-        S.resetSonarSensorPos() 
-        print("The max index is "+ str(max_degree))
-        if li:
-            break
-        mov.moveForward(40, True)
-    """
-
 def moveToBottle(reading, degreeRotated):
-    #mov.moveForward(reading, True)
     mov.setMotorDPS(-200, reading - 30)
     mov.moveForward(-20, True)
-    mov.rotateDegree(90 - degreeRotated)
-    mov.moveForward(40, True)
 
 def fixAngle(angle):
     '''
@@ -211,7 +113,6 @@ def intervalCoordinates(xTarget, yTarget, mcl, interval):
 
     return coordinates
 
-
 def navigateToWaypoint(xTarget, yTarget, mcl, mov):
     print("-----------------------------------------------------")
     coordinates = intervalCoordinates(xTarget, yTarget, mcl, 20)
@@ -230,13 +131,9 @@ def navigateToWaypoint(xTarget, yTarget, mcl, mov):
         if reading < 255:
             mcl.localisation(reading)
 
-def correction(z, mcl, mov):
-    pass
-    #x, y, t = mcl.getAverageCoordinate()    
-    #(m, wall) = mcl.getWall(x, y, t)
-    #if abs(m - z) > 3 and z < 250:
-    #    mov.moveForward(z-m, False)            
-
+def fixOrientation(theta, mcl, mov):
+    _, _, currTheta = mcl.getAverageCoordinate()
+    mov.rotateDegree(theta - fixAngle(currTheta))
 
 def getTravelInfo(mcl, targetX, targetY):
     xCoordinate, yCoordinate, theta = mcl.getAverageCoordinate()
