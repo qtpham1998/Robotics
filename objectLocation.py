@@ -115,21 +115,27 @@ def intervalCoordinates(xTarget, yTarget, mcl, interval):
 
 def navigateToWaypoint(xTarget, yTarget, mcl, mov):
     print("-----------------------------------------------------")
-    coordinates = intervalCoordinates(xTarget, yTarget, mcl, 20)
-    for (X,Y) in coordinates:
-        distToMove, degToRot = getTravelInfo(mcl, X, Y)
-        if abs(degToRot) > 3:
-            mov.rotateDegree(degToRot)
-        mov.moveForward(distToMove, True)
-        reading = S.getSensorReading()
-        if reading < 255:
-            mcl.localisation(reading)
+    distToMove, degToRot = getTravelInfo(mcl, xTarget, yTarget)
+    if abs(degToRot) > 3:
+        mov.rotateDegree(degToRot)
+    mov.moveForward(distToMove, True)
+    reading = S.getSensorReading()
+    if reading < 255:
+        mcl.localisation(reading)
     reading = S.getSensorReading()
     if reading < 255:
         correction(reading, mcl, mov)
         reading = S.getSensorReading()
         if reading < 255:
             mcl.localisation(reading)
+
+def correction(z, mcl, mov):
+    if z > 20: 
+        return
+    x, y, t = mcl.getAverageCoordinate()    
+    (m, wall) = mcl.getWall(x, y, t)
+    if abs(m - z) > 3:
+        mov.moveForward(z-m, False)  
 
 def fixOrientation(theta, mcl, mov):
     _, _, currTheta = mcl.getAverageCoordinate()

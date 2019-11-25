@@ -34,7 +34,7 @@ class MCL:
         draw = []
         for p in self.particleSet:
             draw.append(p.getCoords())
-        particleDataStructures.canvas.drawParticles(draw)
+        #particleDataStructures.canvas.drawParticles(draw)
         
 
     def toRads(self, theta):
