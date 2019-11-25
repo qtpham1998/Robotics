@@ -39,7 +39,7 @@ def navigate():
         fixOrientation(theta, mcl, mov)
     #navigateToWaypoint(84, 30, mcl, mov)
 
-def findBottle(start):
+def findBottle():
     detected = False
     abnormalList = []
     while not detected:
