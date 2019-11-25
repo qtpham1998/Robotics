@@ -35,9 +35,6 @@ class Movement:
         except IOError as error:
             print (error)
 
-    def getMotorEncoder(self):
-        return self.BP.get_motor_encoder(self.leftMotor), self.BP.get_motor_encoder(self.rightMotor)
-
     def getMotorDps(self):
         '''
         Gets the motor velocity (dps)
@@ -49,21 +46,28 @@ class Movement:
         self.BP.set_motor_position(self.rightMotor, left)
         self.BP.set_motor_position(self.leftMotor, right)
         self.wait()
+        
+    def getMotorPosition(self):
+        return self.BP.get_motor_encoder(self.leftMotor), self.BP.get_motor_encoder(self.rightMotor)
 
     def touchObstacle(self, dps):
-        startLeft, startRight = self.getMotorEncoder()
-        self.BP.set_motor_dps(self.rightMotor, dps)
+        start, _ = self.getMotorPosition()
+        
         self.BP.set_motor_dps(self.leftMotor, dps)
+        self.BP.set_motor_dps(self.rightMotor, dps)
         
         leftReading, rightReading = self.sensor.getTouchSensorReading()
         while(leftReading != 1 and rightReading != 1):
             leftReading, rightReading = self.sensor.getTouchSensorReading()
-            
-        endLeft, endRight = self.getMotorEncoder()
-        self.BP.set_motor_dps(self.rightMotor, 0)
-        self.BP.set_motor_dps(self.leftMotor, 0)
         
-        self.setMotorPosition(endLeft - startLeft, endRight - startRight)
+        end, _ = self.getMotorPosition()
+            
+        self.BP.set_motor_dps(self.leftMotor, 0)
+        self.BP.set_motor_dps(self.rightMotor, 0)
+        
+        self.resetEncoder()
+        dist = start - end
+        self.setMotorPosition(dist, dist)
 
     def wait(self):
         '''

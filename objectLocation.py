@@ -22,8 +22,6 @@ import statistics
 import brickpi333 as brickpi3
 import time
 
-ORIGIN_X = 84
-ORIGIN_Y = 30
 BP = brickpi3.BrickPi333()
 S = Sensors(BP)
 mcl = MCL.MCL()
@@ -32,7 +30,7 @@ mov = movement.Movement(BP, mcl, S)
 from math import pi, atan2, sqrt, atan, sin, cos
 
 def navigate():
-    coordinates = [(100, 60, 70),(100, 60, 135),(84,30,0)]
+    coordinates = [(100, 70, 75),(100, 70, 140),(84,30,0)]
     for x, y, theta in coordinates:
         findBottle()
         navigateToWaypoint(x, y, mcl, mov)
@@ -41,12 +39,16 @@ def navigate():
 def findBottle():
     detected = False
     abnormalList = []
+    
+    # Look for an obstacle
     while not detected:
         print("============================")
         x, y, theta = mcl.getAverageCoordinate()
         S.rotateSonarSensor(90)
         degree = 90
-        S.setSensorDPS(-50)
+        S.setSensorDPS(-40)
+        
+        # Scan immediate surroundings
         while degree > -90:
             reading, degree = S.getSensorDegreeReading()
             (m, wall) = mcl.getWall(x, y, degree + theta)
@@ -57,10 +59,13 @@ def findBottle():
                 detected = True
             time.sleep(0.05)
             degree = S.getCurrentDegree()
+            
         S.setSensorDPS(0)
         S.resetSonarSensorPos()
         if not detected:
             mov.moveForward(40, True)
+    
+    # An obstacle was found
     degreeDetected = statistics.mean(abnormalList)
     print("Turning towards object (hopefully) at angle %d, moving distance %d" %(degreeDetected, reading))
     mov.rotateDegree(fixAngle(degreeDetected))
