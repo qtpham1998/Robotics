@@ -37,7 +37,7 @@ class Canvas:
         y1 = self.__screenY(line[1])
         x2 = self.__screenX(line[2])
         y2 = self.__screenY(line[3])
-        #print ("drawLine:" + str((x1,y1,x2,y2)))
+        print ("drawLine:" + str((x1,y1,x2,y2)))
 
     def drawParticles(self,data):
         display = [(self.__screenX(d[0]),self.__screenY(d[1])) + d[2:] for d in data]
@@ -69,9 +69,6 @@ class Particles:
     def __init__(self):
         self.n = NUMBER_OF_PARTICLES
         self.data = []
-        pos1 = 168/420
-        pos2 = 210/420 + pos1
-        pos3 = 1
         for i in range(self.n):
             self.data.append(Particle(84, 30, 0))
 

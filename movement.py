@@ -13,8 +13,8 @@ class Movement:
         self.initialise()
 
     def initialise(self):
-        self.BP.set_motor_limits(self.leftMotor, 70, 200)
-        self.BP.set_motor_limits(self.rightMotor, 70, 200)
+        self.BP.set_motor_limits(self.leftMotor, 75, 300)
+        self.BP.set_motor_limits(self.rightMotor, 75, 300)
 
     def calculateTargetDistance(self, dist):
         '''
@@ -35,6 +35,8 @@ class Movement:
         except IOError as error:
             print (error)
 
+    def getMotorEncoder(self):
+        return self.BP.get_motor_encoder(self.leftMotor), self.BP.get_motor_encoder(self.rightMotor)
 
     def getMotorDps(self):
         '''
@@ -48,15 +50,20 @@ class Movement:
         self.BP.set_motor_position(self.leftMotor, right)
         self.wait()
 
-    def setMotorDPS(self, dps, dist):
+    def touchObstacle(self, dps):
+        startLeft, startRight = self.getMotorEncoder()
         self.BP.set_motor_dps(self.rightMotor, dps)
         self.BP.set_motor_dps(self.leftMotor, dps)
+        
         leftReading, rightReading = self.sensor.getTouchSensorReading()
         while(leftReading != 1 and rightReading != 1):
             leftReading, rightReading = self.sensor.getTouchSensorReading()
+            
+        endLeft, endRight = self.getMotorEncoder()
         self.BP.set_motor_dps(self.rightMotor, 0)
         self.BP.set_motor_dps(self.leftMotor, 0)
-        self.MCL.updateParticles(dist,0)
+        
+        self.setMotorPosition(endLeft - startLeft, endRight - startRight)
 
     def wait(self):
         '''

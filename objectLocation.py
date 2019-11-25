@@ -32,12 +32,11 @@ mov = movement.Movement(BP, mcl, S)
 from math import pi, atan2, sqrt, atan, sin, cos
 
 def navigate():
-    coordinates = [(90, 70, 70),(90, 70, 135),(84,30,0)]
+    coordinates = [(100, 60, 70),(100, 60, 135),(84,30,0)]
     for x, y, theta in coordinates:
         findBottle()
         navigateToWaypoint(x, y, mcl, mov)
         fixOrientation(theta, mcl, mov)
-    #navigateToWaypoint(84, 30, mcl, mov)
 
 def findBottle():
     detected = False
@@ -53,8 +52,7 @@ def findBottle():
             (m, wall) = mcl.getWall(x, y, degree + theta)
             if reading < 100 and m - reading > 20:
                 degreeDetected = degree
-                print("Detecting abnormal distance: expecting %d, sensing object at %d" %(m, reading))
-                print("Facing the wall %s" %str(wall))
+                print("Detecting abnormal distance: expecting %d, sensing object at %d when facing the wall %s" %(m, reading, str(wall)))
                 abnormalList.append(degree)
                 detected = True
             time.sleep(0.05)
@@ -66,11 +64,7 @@ def findBottle():
     degreeDetected = statistics.mean(abnormalList)
     print("Turning towards object (hopefully) at angle %d, moving distance %d" %(degreeDetected, reading))
     mov.rotateDegree(fixAngle(degreeDetected))
-    moveToBottle(reading, degreeDetected)
-        
-def moveToBottle(reading, degreeRotated):
-    mov.setMotorDPS(-200, reading - 30)
-    mov.moveForward(-20, True)
+    mov.touchObstacle(-200)
 
 def fixAngle(angle):
     '''
@@ -83,35 +77,6 @@ def fixAngle(angle):
     while (angle < -180):
         angle += 360
     return angle
-
-
-def intervalCoordinates(xTarget, yTarget, mcl, interval):
-    xCoord, yCoord, _ = mcl.getAverageCoordinate()
-    xDiff = abs(xCoord - xTarget)
-    yDiff = abs(yCoord - yTarget)
-    theta = atan2(yDiff, xDiff)
-    distance = sqrt(xDiff * xDiff + yDiff * yDiff)
-
-    coordinates = []
-
-    xSign = 1
-    ySign = 1
-
-    if (xTarget < xCoord):
-        xSign = -1
-    if (yTarget < yCoord):
-        ySign = -1
-
-    while (distance >= interval):
-        xCoord += xSign * cos(theta) * interval
-        yCoord += ySign * sin(theta) * interval
-        coordinates.append((xCoord, yCoord))
-        distance -= interval
-
-    if (distance > 0):
-        coordinates.append((xTarget, yTarget))
-
-    return coordinates
 
 def navigateToWaypoint(xTarget, yTarget, mcl, mov):
     print("-----------------------------------------------------")

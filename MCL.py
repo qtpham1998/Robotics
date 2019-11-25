@@ -34,7 +34,7 @@ class MCL:
         draw = []
         for p in self.particleSet:
             draw.append(p.getCoords())
-        #particleDataStructures.canvas.drawParticles(draw)
+        particleDataStructures.canvas.drawParticles(draw)
         
 
     def toRads(self, theta):
@@ -67,7 +67,7 @@ class MCL:
         '''
         for i in range(NUMBER_OF_PARTICLES):
             self.particleSet[i] = self.particleSet[i].updateParticle(dist, degrees)
-        #self.drawCanvas()
+        self.drawCanvas()
     
     def sensorUpdate(self, reading):
         '''
