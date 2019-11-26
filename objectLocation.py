@@ -30,6 +30,9 @@ mov = movement.Movement(BP, mcl, S)
 from math import pi, atan2, sqrt, atan, sin, cos
 
 def navigate():
+    """
+    Navigates around the map to find the three bottles and touch them before returning to starting position (if only)
+    """
     coordinates = [(100, 70, 75),(100, 70, 140),(84,30,0)]
     for x, y, theta in coordinates:
         findBottle()
@@ -37,6 +40,10 @@ def navigate():
         fixOrientation(theta, mcl, mov)
 
 def findBottle():
+    """
+    Scans the area for an obstacle in steps of 40cm and 180 area sweepings.
+    Once detected, robot moves to touch the obstacle before returning to position when obstacle was detected.
+    """
     detected = False
     abnormalList = []
     
@@ -84,6 +91,13 @@ def fixAngle(angle):
     return angle
 
 def navigateToWaypoint(xTarget, yTarget, mcl, mov):
+    """
+    Navigates robot to the provided waypoint
+    @param xTarget The x-coordinate of the destination
+    @param yTarget The y-coordinate of the destination
+    @param mcl The mcl class for localisation
+    @param mov The movement class for robot movements
+    """
     print("-----------------------------------------------------")
     distToMove, degToRot = getTravelInfo(mcl, xTarget, yTarget)
     if abs(degToRot) > 3:
@@ -100,6 +114,12 @@ def navigateToWaypoint(xTarget, yTarget, mcl, mov):
             mcl.localisation(reading)
 
 def correction(z, mcl, mov):
+    """ 
+    Corrects position if ditance from the wall is not as expected
+    @param z The sonar sensor reading
+    @param mcl The mcl class for localisation
+    @param mov The movement class for robot movements
+    """
     if z > 20: 
         return
     x, y, t = mcl.getAverageCoordinate()    
@@ -108,10 +128,22 @@ def correction(z, mcl, mov):
         mov.moveForward(z-m, False)  
 
 def fixOrientation(theta, mcl, mov):
+    """
+    Rotates the robot to face the given orientation with respect to positive x-axis
+    @param theta The angle to face
+    @param mcl THe mcl class for localisatoin
+    @param mov THe movement class for robot movements
+    """
     _, _, currTheta = mcl.getAverageCoordinate()
     mov.rotateDegree(theta - fixAngle(currTheta))
 
 def getTravelInfo(mcl, targetX, targetY):
+    """
+    Calculates the distance to travel and degree to turn to reach the desired destination
+    @param mcl The mcl class for localisation
+    @param targetX The x-coordinate of the destination
+    @param targetY The y-coordinate of the destination
+    """
     xCoordinate, yCoordinate, theta = mcl.getAverageCoordinate()
     print("The current (X,Y) coordinates are (%d, %d). Moving to (%d, %d)" %(xCoordinate,yCoordinate,targetX,targetY))
     xDiff = targetX - xCoordinate
