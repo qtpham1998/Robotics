@@ -13,8 +13,8 @@ class Movement:
         self.initialise()
 
     def initialise(self):
-        self.BP.set_motor_limits(self.leftMotor, 75, 300)
-        self.BP.set_motor_limits(self.rightMotor, 75, 300)
+        self.BP.set_motor_limits(self.leftMotor, 70, 350)
+        self.BP.set_motor_limits(self.rightMotor, 70, 350)
 
     def calculateTargetDistance(self, dist):
         '''

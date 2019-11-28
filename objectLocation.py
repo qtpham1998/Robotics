@@ -33,13 +33,16 @@ def navigate():
     """
     Navigates around the map to find the three bottles and touch them before returning to starting position (if only)
     """
-    coordinates = [(100, 70, 75),(100, 70, 140),(84,30,0)]
-    for x, y, theta in coordinates:
-        findBottle()
+    coordinates = [(100, 70, 75,["d", "e", "f", "g", "h"]),(60, 40, 90, ["c", "d", "e"]),(84,30,-90, ["a", "b", "c"])]
+    for x, y, theta, walls in coordinates:
+        findBottle(walls)
         navigateToWaypoint(x, y, mcl, mov)
         fixOrientation(theta, mcl, mov)
+    correction(S.getSensorReading(), mcl, mov)
+    fixOrientation(-180, mcl, mov)
+    correction(S.getSensorReading(), mcl, mov)
 
-def findBottle():
+def findBottle(walls):
     """
     Scans the area for an obstacle in steps of 40cm and 180 area sweepings.
     Once detected, robot moves to touch the obstacle before returning to position when obstacle was detected.
@@ -53,30 +56,30 @@ def findBottle():
         x, y, theta = mcl.getAverageCoordinate()
         S.rotateSonarSensor(90)
         degree = 90
-        S.setSensorDPS(-40)
+        S.setSensorDPS(-75)
         
         # Scan immediate surroundings
         while degree > -90:
             reading, degree = S.getSensorDegreeReading()
             (m, wall) = mcl.getWall(x, y, degree + theta)
-            if reading < 100 and m - reading > 20:
+            if reading < 100 and m - reading > 20 and wall[4] in walls:
                 degreeDetected = degree
                 print("Detecting abnormal distance: expecting %d, sensing object at %d when facing the wall %s" %(m, reading, str(wall)))
                 abnormalList.append(degree)
                 detected = True
-            time.sleep(0.05)
+            time.sleep(0.002)
             degree = S.getCurrentDegree()
             
         S.setSensorDPS(0)
         S.resetSonarSensorPos()
         if not detected:
-            mov.moveForward(40, True)
+            mov.moveForward(35, True)
     
     # An obstacle was found
     degreeDetected = statistics.mean(abnormalList)
     print("Turning towards object (hopefully) at angle %d, moving distance %d" %(degreeDetected, reading))
     mov.rotateDegree(fixAngle(degreeDetected))
-    mov.touchObstacle(-200)
+    mov.touchObstacle(-300)
 
 def fixAngle(angle):
     '''
@@ -120,11 +123,9 @@ def correction(z, mcl, mov):
     @param mcl The mcl class for localisation
     @param mov The movement class for robot movements
     """
-    if z > 20: 
-        return
     x, y, t = mcl.getAverageCoordinate()    
     (m, wall) = mcl.getWall(x, y, t)
-    if abs(m - z) > 3:
+    if 20 > abs(m - z) > 3:
         mov.moveForward(z-m, False)  
 
 def fixOrientation(theta, mcl, mov):
@@ -135,6 +136,7 @@ def fixOrientation(theta, mcl, mov):
     @param mov THe movement class for robot movements
     """
     _, _, currTheta = mcl.getAverageCoordinate()
+    print("Rotating to fix orientation, current angle is %d, rotating %d to get %d" %(currTheta, theta - fixAngle(currTheta), theta))
     mov.rotateDegree(theta - fixAngle(currTheta))
 
 def getTravelInfo(mcl, targetX, targetY):
